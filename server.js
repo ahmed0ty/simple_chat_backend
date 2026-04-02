@@ -60,7 +60,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing", (isTyping) => {
-    socket.broadcast.emit("typing", { username: users[socket.id], isTyping });
+    socket.broadcast.emit("typing", { username: users[socket.id],isTyping});
   });
 
   socket.on("disconnect", () => {
