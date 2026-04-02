@@ -35,6 +35,12 @@
       --bubble-other: #1e2230;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: 'Cairo', sans-serif;
       background: var(--bg);
@@ -43,7 +49,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -160,6 +165,7 @@
       border: 1px solid var(--border);
       box-shadow: 0 32px 100px rgba(0,0,0,.6);
       position: relative;
+      min-height: 0;
     }
 
     #sidebar {
@@ -169,6 +175,7 @@
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      min-height: 0;
     }
 
     .sidebar-header {
@@ -197,6 +204,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-height: 0;
     }
 
     .user-item {
@@ -230,6 +238,9 @@
       flex-direction: column;
       background: var(--bg);
       min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
     }
 
     #chat-header {
@@ -240,6 +251,7 @@
       align-items: center;
       gap: 12px;
       min-height: 72px;
+      flex-shrink: 0;
     }
 
     .header-icon {
@@ -272,6 +284,8 @@
       scrollbar-color: var(--border) transparent;
       scroll-behavior: smooth;
       min-height: 0;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
 
     .msg {
@@ -345,6 +359,7 @@
       font-size: 13px;
       color: var(--muted);
       font-style: italic;
+      flex-shrink: 0;
     }
 
     #input-area {
@@ -354,8 +369,11 @@
       display: flex;
       gap: 8px;
       align-items: flex-end;
-      position: relative;
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
       flex-wrap: nowrap;
+      flex-shrink: 0;
     }
 
     #msg-input {
@@ -374,6 +392,7 @@
       max-height: 120px;
       transition: border-color .2s;
       line-height: 1.5;
+      overflow-y: auto;
     }
 
     #msg-input:focus {
@@ -680,7 +699,6 @@
       border-radius: 4px;
     }
 
-    /* ✅ Tablet */
     @media (max-width: 992px) {
       #app {
         max-width: 100%;
@@ -693,7 +711,6 @@
       }
     }
 
-    /* ✅ Mobile */
     @media (max-width: 768px) {
       body {
         align-items: stretch;
@@ -711,6 +728,10 @@
 
       #sidebar {
         display: none;
+      }
+
+      #chat-main {
+        height: 100%;
       }
 
       #chat-header {
@@ -850,7 +871,6 @@
       }
     }
 
-    /* ✅ Small phones */
     @media (max-width: 420px) {
       #chat-header {
         padding: 10px 12px;
@@ -961,7 +981,6 @@
     </div>
   </div>
 
-  <!-- شاشة المشاهد فقط -->
   <div id="viewer-overlay">
     <div id="viewer-label">
       📡 بث مباشر
@@ -996,6 +1015,10 @@
       socket.emit('join', name);
       document.getElementById('join-screen').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
+
+      setTimeout(() => {
+        scrollDown();
+      }, 50);
     }
 
     document.getElementById('username-input').addEventListener('keydown', e => {
@@ -1055,6 +1078,7 @@
       input.value = '';
       input.style.height = 'auto';
       clearTyping();
+      scrollDown();
     }
 
     function appendMessage(data) {
@@ -1091,6 +1115,7 @@
     function autoResize(el) {
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, window.innerWidth <= 768 ? 100 : 120) + 'px';
+      keepInputVisible();
     }
 
     function handleTyping() {
@@ -1109,12 +1134,24 @@
       clearTimeout(typingTimer);
     }
 
-    function scrollDown() {
+    function scrollDown(force = false) {
       const msgs = document.getElementById('messages');
-      msgs.scrollTop = msgs.scrollHeight;
+      const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 120;
+
+      if (force || nearBottom) {
+        requestAnimationFrame(() => {
+          msgs.scrollTop = msgs.scrollHeight;
+        });
+      }
     }
 
-    // Emoji Picker
+    function keepInputVisible() {
+      const inputArea = document.getElementById('input-area');
+      setTimeout(() => {
+        inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      }, 50);
+    }
+
     let pickerInstance = null;
     let pickerOpen = false;
 
@@ -1150,23 +1187,19 @@
 
       wrap.classList.add('open');
       pickerOpen = true;
+      keepInputVisible();
     }
 
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('emoji-picker-wrap');
       const btn = document.getElementById('emoji-btn');
 
-      if (
-        pickerOpen &&
-        !wrap.contains(e.target) &&
-        e.target !== btn
-      ) {
+      if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) {
         wrap.classList.remove('open');
         pickerOpen = false;
       }
     });
 
-    // صوت + فيديو
     let mediaRecorder = null;
     let audioChunks = [];
     let recInterval = null;
@@ -1277,6 +1310,7 @@
       document.getElementById('msg-input').style.display = '';
       document.getElementById('emoji-btn').style.display = '';
       clearInterval(recInterval);
+      keepInputVisible();
     }
 
     async function sendVoiceMessage(blob, duration) {
@@ -1312,7 +1346,7 @@
       `;
 
       msgs.appendChild(el);
-      scrollDown();
+      scrollDown(true);
     }
 
     function playVoice(btn, src) {
@@ -1335,7 +1369,6 @@
       return `${m}:${sec.toString().padStart(2,'0')}`;
     }
 
-    // المشاهد: استقبل البث
     socket.on('stream-offer', async ({ offer }) => {
       const pc = new RTCPeerConnection(iceServers);
 
@@ -1389,7 +1422,6 @@
       }
     }
 
-    // Drag بالفأرة
     const vo = document.getElementById('viewer-overlay');
     let dragging = false, ox = 0, oy = 0;
 
@@ -1413,7 +1445,6 @@
       vo.style.cursor = 'grab';
     });
 
-    // Drag بالتاتش
     vo.addEventListener('touchstart', e => {
       const target = e.target.tagName;
       if (target === 'BUTTON' || target === 'VIDEO') return;
@@ -1436,7 +1467,6 @@
       dragging = false;
     });
 
-    // تكبير/تصغير
     let isLarge = false;
     function toggleViewerSize() {
       isLarge = !isLarge;
@@ -1444,6 +1474,18 @@
         ? (window.innerWidth <= 768 ? '220px' : '480px')
         : (window.innerWidth <= 768 ? '170px' : '260px');
     }
+
+    window.addEventListener('resize', () => {
+      keepInputVisible();
+      scrollDown();
+    });
+
+    document.getElementById('msg-input').addEventListener('focus', () => {
+      setTimeout(() => {
+        keepInputVisible();
+        scrollDown(true);
+      }, 250);
+    });
   </script>
 </body>
 </html>

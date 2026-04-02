@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("stream-offer", (data) => {
-    socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
+    socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id});
   });
   socket.on("stream-answer", (data) => {
     socket.broadcast.emit("stream-answer", { answer: data.answer });
