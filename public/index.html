@@ -292,7 +292,7 @@
       display: flex;
       flex-direction: column;
       max-width: 72%;
-      animation: msgPop .25s cubic-bezier(.34,1.56,.64,1);
+      animation: msgPop .2s ease;
     }
 
     .msg.me {
@@ -647,11 +647,6 @@
       transition: opacity .2s, transform .15s;
     }
 
-    .stream-btn:hover {
-      opacity: .85;
-      transform: translateY(-1px);
-    }
-
     .stream-btn.close {
       background: var(--surface2);
       color: var(--text);
@@ -678,7 +673,7 @@
     @keyframes msgPop {
       from {
         opacity: 0;
-        transform: scale(.92) translateY(6px);
+        transform: scale(.96) translateY(4px);
       }
       to {
         opacity: 1;
@@ -839,11 +834,6 @@
         font-size: 12px;
       }
 
-      .stream-btn.close {
-        font-size: 13px;
-        padding: 9px 12px;
-      }
-
       .join-card {
         width: 100%;
         max-width: 380px;
@@ -997,15 +987,35 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
+    const socket = io({
+      transports: ["websocket", "polling"]
+    });
+
     let myId = null;
     let myName = '';
     let typingTimer = null;
     let isTyping = false;
 
+    let pickerInstance = null;
+    let pickerOpen = false;
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recInterval = null;
+    let recSeconds = 0;
+
+    let streamPC = null;
+    let localStreamObj = null;
+    let localStreamStarted = false;
+
+    const iceServers = {
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
+
     function joinChat() {
       const input = document.getElementById('username-input');
       const name = input.value.trim();
+
       if (!name) {
         input.focus();
         return;
@@ -1017,7 +1027,7 @@
       document.getElementById('app').style.display = 'flex';
 
       setTimeout(() => {
-        scrollDown();
+        scrollDown(true);
       }, 50);
     }
 
@@ -1033,12 +1043,14 @@
       history.forEach(msg => {
         if (!msg.text) return;
         const fakeMsg = { ...msg, id: msg.username === myName ? myId : 'other' };
-        appendMessage(fakeMsg);
+        appendMessage(fakeMsg, false);
       });
+
+      scrollDown(true);
     });
 
     socket.on('message', (data) => {
-      appendMessage(data);
+      appendMessage(data, true);
     });
 
     socket.on('system', (data) => {
@@ -1047,19 +1059,20 @@
       el.className = 'sys-msg';
       el.textContent = `${data.text} • ${data.time}`;
       msgs.appendChild(el);
-      scrollDown();
+      scrollDown(true);
     });
 
     socket.on('users', (users) => {
       const list = document.getElementById('users-list');
       const count = document.getElementById('online-count');
+
       list.innerHTML = '';
       count.textContent = `${users.length} أونلاين`;
 
       users.forEach(name => {
         const el = document.createElement('div');
         el.className = 'user-item';
-        el.innerHTML = `<div class="user-dot"></div><span>${name}</span>`;
+        el.innerHTML = `<div class="user-dot"></div><span>${escapeHtml(name)}</span>`;
         list.appendChild(el);
       });
     });
@@ -1072,37 +1085,47 @@
     function sendMessage() {
       const input = document.getElementById('msg-input');
       const text = input.value.trim();
+
       if (!text) return;
 
       socket.emit('message', { text });
+
       input.value = '';
       input.style.height = 'auto';
       clearTyping();
-      scrollDown();
+      scrollDown(true);
     }
 
-    function appendMessage(data) {
+    function appendMessage(data, shouldScroll = true) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
-      const el = document.createElement('div');
 
+      const el = document.createElement('div');
       el.className = `msg ${isMe ? 'me' : 'other'}`;
       el.innerHTML = `
-        ${!isMe ? `<div class="msg-username">${data.username}</div>` : ''}
-        <div class="msg-bubble">${formatText(data.text)}</div>
-        <div class="msg-time">${data.time}</div>
+        ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
+        <div class="msg-bubble">${formatText(data.text || '')}</div>
+        <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
 
       msgs.appendChild(el);
-      scrollDown();
+
+      if (shouldScroll) {
+        scrollDown(true);
+      }
     }
 
-    function formatText(str) {
-      return str
+    function escapeHtml(str) {
+      return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatText(str) {
+      return escapeHtml(str).replace(/\n/g, '<br>');
     }
 
     function handleKey(e) {
@@ -1125,7 +1148,7 @@
       }
 
       clearTimeout(typingTimer);
-      typingTimer = setTimeout(clearTyping, 1500);
+      typingTimer = setTimeout(clearTyping, 1000);
     }
 
     function clearTyping() {
@@ -1136,7 +1159,7 @@
 
     function scrollDown(force = false) {
       const msgs = document.getElementById('messages');
-      const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 120;
+      const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 150;
 
       if (force || nearBottom) {
         requestAnimationFrame(() => {
@@ -1149,11 +1172,8 @@
       const inputArea = document.getElementById('input-area');
       setTimeout(() => {
         inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' });
-      }, 50);
+      }, 30);
     }
-
-    let pickerInstance = null;
-    let pickerOpen = false;
 
     function toggleEmojiPicker() {
       const wrap = document.getElementById('emoji-picker-wrap');
@@ -1170,9 +1190,11 @@
             const input = document.getElementById('msg-input');
             const pos = input.selectionStart;
             const val = input.value;
+
             input.value = val.slice(0, pos) + emoji.native + val.slice(pos);
             input.focus();
             input.selectionStart = input.selectionEnd = pos + emoji.native.length;
+
             autoResize(input);
           },
           locale: 'ar',
@@ -1200,91 +1222,86 @@
       }
     });
 
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let recInterval = null;
-    let recSeconds = 0;
-    let streamPC = null;
-    let localStreamObj = null;
-    const iceServers = {
-      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-    };
+    async function startLocalStreamOnce() {
+      if (localStreamStarted && localStreamObj && streamPC) return;
+
+      localStreamObj = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user' },
+        audio: true
+      });
+
+      streamPC = new RTCPeerConnection(iceServers);
+
+      localStreamObj.getTracks().forEach(track => {
+        streamPC.addTrack(track, localStreamObj);
+      });
+
+      streamPC.onicecandidate = (e) => {
+        if (e.candidate) {
+          socket.emit('stream-ice', { candidate: e.candidate });
+        }
+      };
+
+      const offer = await streamPC.createOffer();
+      await streamPC.setLocalDescription(offer);
+      socket.emit('stream-offer', { offer });
+
+      localStreamStarted = true;
+    }
 
     async function toggleRecording() {
+      // لو التسجيل شغال -> وقف التسجيل فقط
       if (mediaRecorder && mediaRecorder.state === 'recording') {
-        stopEverything();
+        mediaRecorder.stop();
         return;
       }
 
       try {
-        localStreamObj = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user' },
-          audio: true
+        // افتح البث مرة واحدة فقط
+        await startLocalStreamOnce();
+
+        const audioTrack = localStreamObj.getAudioTracks()[0];
+        if (!audioTrack) {
+          alert("الميكروفون غير متاح");
+          return;
+        }
+
+        const audioStream = new MediaStream([audioTrack]);
+        mediaRecorder = new MediaRecorder(audioStream, {
+          mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+            ? 'audio/webm;codecs=opus'
+            : 'audio/webm'
         });
 
-        const audioStream = new MediaStream(localStreamObj.getAudioTracks());
-        mediaRecorder = new MediaRecorder(audioStream);
         audioChunks = [];
         recSeconds = 0;
 
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) audioChunks.push(e.data);
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunks.push(e.data);
+          }
         };
 
         mediaRecorder.onstop = () => {
+          const duration = recSeconds;
+          stopRecordingUI();
+
           setTimeout(() => {
+            if (!audioChunks.length) return;
+
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            sendVoiceMessage(blob, recSeconds);
-            stopEverythingCleanup();
-          }, 300);
+            sendVoiceMessage(blob, duration);
+            mediaRecorder = null;
+            audioChunks = [];
+          }, 50);
         };
 
-        mediaRecorder.start(100);
-
-        streamPC = new RTCPeerConnection(iceServers);
-        localStreamObj.getTracks().forEach(t => streamPC.addTrack(t, localStreamObj));
-
-        streamPC.onicecandidate = (e) => {
-          if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate });
-        };
-
-        const offer = await streamPC.createOffer();
-        await streamPC.setLocalDescription(offer);
-        socket.emit('stream-offer', { offer });
-
+        mediaRecorder.start(80);
         startRecordingUI();
 
       } catch (err) {
+        console.error(err);
         alert('مش قادر يوصل للكاميرا والميكروفون! تأكد من إذن المتصفح.');
-      }
-    }
-
-    function stopEverything() {
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-      } else {
-        stopEverythingCleanup();
-      }
-
-      socket.emit('stream-end');
-
-      if (streamPC) {
-        streamPC.close();
-        streamPC = null;
-      }
-
-      if (localStreamObj) {
-        localStreamObj.getTracks().forEach(t => t.stop());
-        localStreamObj = null;
-      }
-    }
-
-    function stopEverythingCleanup() {
-      stopRecordingUI();
-
-      if (localStreamObj) {
-        localStreamObj.getTracks().forEach(t => t.stop());
-        localStreamObj = null;
       }
     }
 
@@ -1295,6 +1312,7 @@
       document.getElementById('msg-input').style.display = 'none';
       document.getElementById('emoji-btn').style.display = 'none';
 
+      clearInterval(recInterval);
       recInterval = setInterval(() => {
         recSeconds++;
         const m = Math.floor(recSeconds / 60);
@@ -1313,12 +1331,14 @@
       keepInputVisible();
     }
 
-    async function sendVoiceMessage(blob, duration) {
+    function sendVoiceMessage(blob, duration) {
       const reader = new FileReader();
+
       reader.onloadend = () => {
         const base64 = reader.result.split(',')[1];
         socket.emit('voice', { audio: base64, duration });
       };
+
       reader.readAsDataURL(blob);
     }
 
@@ -1330,19 +1350,19 @@
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
       const audioSrc = `data:audio/webm;base64,${data.audio}`;
-      const dur = formatDuration(data.duration);
+      const dur = formatDuration(data.duration || 0);
       const bars = generateBars();
 
       const el = document.createElement('div');
       el.className = `msg ${isMe ? 'me' : 'other'}`;
       el.innerHTML = `
-        ${!isMe ? `<div class="msg-username">${data.username}</div>` : ''}
+        ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
         <div class="msg-bubble voice-bubble">
           <button class="voice-play-btn" onclick="playVoice(this, '${audioSrc}')">▶</button>
           <div class="voice-waveform">${bars}</div>
           <span class="voice-duration">${dur}</span>
         </div>
-        <div class="msg-time">${data.time}</div>
+        <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
 
       msgs.appendChild(el);
@@ -1353,7 +1373,12 @@
       const audio = new Audio(src);
       btn.textContent = '⏸';
       audio.play();
+
       audio.onended = () => {
+        btn.textContent = '▶';
+      };
+
+      audio.onpause = () => {
         btn.textContent = '▶';
       };
     }
@@ -1377,7 +1402,9 @@
       };
 
       pc.onicecandidate = (e) => {
-        if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate });
+        if (e.candidate) {
+          socket.emit('stream-ice', { candidate: e.candidate });
+        }
       };
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
@@ -1397,9 +1424,14 @@
 
     socket.on('stream-ice', async ({ candidate }) => {
       const pc = streamPC || window._viewerPC;
+
       try {
-        if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch(e) {}
+        if (pc) {
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+      } catch (e) {
+        console.error(e);
+      }
     });
 
     socket.on('stream-end', () => {
@@ -1427,6 +1459,7 @@
 
     vo.addEventListener('mousedown', e => {
       if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
+
       dragging = true;
       ox = e.clientX - vo.offsetLeft;
       oy = e.clientY - vo.offsetTop;
@@ -1484,7 +1517,20 @@
       setTimeout(() => {
         keepInputVisible();
         scrollDown(true);
-      }, 250);
+      }, 200);
+    });
+
+    // لما الصفحة تتقفل، البث يقف طبيعي لأن socket هيفصل
+    window.addEventListener('beforeunload', () => {
+      if (streamPC) {
+        try { streamPC.close(); } catch (e) {}
+      }
+
+      if (localStreamObj) {
+        localStreamObj.getTracks().forEach(track => {
+          try { track.stop(); } catch (e) {}
+        });
+      }
     });
   </script>
 </body>
