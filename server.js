@@ -53,7 +53,7 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("stream-answer", { answer: data.answer });
   });
   socket.on("stream-ice", (data) => {
-    socket.broadcast.emit("stream-ice", { candidate: data.candidate });
+    socket.broadcast.emit("stream-ice", { candidate: data.candidate});
   });
   socket.on("stream-end", () => {
     socket.broadcast.emit("stream-end");
