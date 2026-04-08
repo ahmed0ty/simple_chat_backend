@@ -111,12 +111,13 @@ io.on("connection", (socket) => {
       answer: data.answer
     });
   });
-
-  socket.on("stream-ice", (data) => {
-    socket.broadcast.emit("stream-ice", {
-      candidate: data.candidate
-    });
+// ✅ صح - نفس الكود بس تأكد إنه broadcast مش emit
+socket.on("stream-ice", (data) => {
+  socket.broadcast.emit("stream-ice", {
+    candidate: data.candidate,
+    from: socket.id
   });
+});
 
   socket.on("typing", (isTyping) => {
     socket.broadcast.emit("typing", {
