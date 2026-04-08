@@ -792,13 +792,30 @@
     let streamPC = null, localStreamObj = null, localStreamStarted = false;
 
     const iceServers = {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-      ]
-    };
+  iceServers: [
+    { urls: "stun:stun.relay.metered.ca:80" },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "4e3bac8e9ee08a354b784744",
+      credential: "9EJqUQsZInfFvq+m"
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "4e3bac8e9ee08a354b784744",
+      credential: "9EJqUQsZInfFvq+m"
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "4e3bac8e9ee08a354b784744",
+      credential: "9EJqUQsZInfFvq+m"
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "4e3bac8e9ee08a354b784744",
+      credential: "9EJqUQsZInfFvq+m"
+    }
+  ]
+};
 
     // Heartbeat - يمنع القطع
     socket.on("ping", () => socket.emit("pong"));
