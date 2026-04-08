@@ -660,249 +660,66 @@
     }
 
     @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(10px);
-      }
-      to {
-        opacity: 1;
-        transform: none;
-      }
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: none; }
     }
 
     @keyframes msgPop {
-      from {
-        opacity: 0;
-        transform: scale(.96) translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: none;
-      }
+      from { opacity: 0; transform: scale(.96) translateY(4px); }
+      to { opacity: 1; transform: none; }
     }
 
-    #messages::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    #messages::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    #messages::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
     @media (max-width: 992px) {
-      #app {
-        max-width: 100%;
-        height: 100dvh;
-        border-radius: 0;
-      }
-
-      #sidebar {
-        width: 190px;
-      }
+      #app { max-width: 100%; height: 100dvh; border-radius: 0; }
+      #sidebar { width: 190px; }
     }
 
     @media (max-width: 768px) {
-      body {
-        align-items: stretch;
-        justify-content: stretch;
-      }
-
-      #app {
-        width: 100%;
-        height: 100dvh;
-        border-radius: 0;
-        flex-direction: column;
-        border: none;
-        box-shadow: none;
-      }
-
-      #sidebar {
-        display: none;
-      }
-
-      #chat-main {
-        height: 100%;
-      }
-
-      #chat-header {
-        padding: 12px 14px;
-        min-height: 60px;
-        gap: 10px;
-      }
-
-      .header-icon {
-        font-size: 22px;
-      }
-
-      #chat-header h2 {
-        font-size: 15px;
-      }
-
-      #chat-header span {
-        font-size: 11px;
-      }
-
-      #messages {
-        padding: 12px 12px 8px;
-        gap: 8px;
-      }
-
-      .msg {
-        max-width: 88%;
-      }
-
-      .msg-bubble {
-        font-size: 14px;
-        padding: 10px 14px;
-        border-radius: 16px;
-      }
-
-      .msg-time {
-        font-size: 10px;
-      }
-
-      #typing-indicator {
-        min-height: 20px;
-        padding: 0 12px 6px;
-        font-size: 12px;
-      }
-
-      #input-area {
-        padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-        gap: 6px;
-      }
-
-      #msg-input {
-        font-size: 14px;
-        padding: 10px 14px;
-        border-radius: 14px;
-        max-height: 100px;
-      }
-
-      #send-btn,
-      #emoji-btn,
-      #voice-btn {
-        width: 42px;
-        height: 42px;
-        border-radius: 12px;
-      }
-
-      #emoji-btn {
-        font-size: 20px;
-      }
-
-      #voice-btn {
-        font-size: 18px;
-      }
-
-      #send-btn svg {
-        width: 18px;
-        height: 18px;
-      }
-
-      #emoji-picker-wrap {
-        left: 8px;
-        right: 8px;
-        bottom: 68px;
-        margin: auto;
-        max-width: unset;
-      }
-
-      em-emoji-picker {
-        width: 100% !important;
-        height: 300px;
-      }
-
-      #viewer-overlay {
-        width: 170px;
-        left: 10px;
-        bottom: 10px;
-        padding: 6px;
-        border-radius: 16px;
-      }
-
-      #viewer-video {
-        border-radius: 10px;
-      }
-
-      #viewer-label {
-        font-size: 12px;
-      }
-
-      .join-card {
-        width: 100%;
-        max-width: 380px;
-        padding: 30px 20px;
-        border-radius: 20px;
-      }
-
-      .join-card .logo {
-        font-size: 44px;
-      }
-
-      .join-card h1 {
-        font-size: 22px;
-      }
-
-      .join-card p {
-        font-size: 13px;
-        margin-bottom: 22px;
-      }
-
-      .join-input,
-      .join-btn {
-        font-size: 14px;
-        padding: 12px 14px;
-      }
+      body { align-items: stretch; justify-content: stretch; }
+      #app { width: 100%; height: 100dvh; border-radius: 0; flex-direction: column; border: none; box-shadow: none; }
+      #sidebar { display: none; }
+      #chat-main { height: 100%; }
+      #chat-header { padding: 12px 14px; min-height: 60px; gap: 10px; }
+      .header-icon { font-size: 22px; }
+      #chat-header h2 { font-size: 15px; }
+      #chat-header span { font-size: 11px; }
+      #messages { padding: 12px 12px 8px; gap: 8px; }
+      .msg { max-width: 88%; }
+      .msg-bubble { font-size: 14px; padding: 10px 14px; border-radius: 16px; }
+      .msg-time { font-size: 10px; }
+      #typing-indicator { min-height: 20px; padding: 0 12px 6px; font-size: 12px; }
+      #input-area { padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); gap: 6px; }
+      #msg-input { font-size: 14px; padding: 10px 14px; border-radius: 14px; max-height: 100px; }
+      #send-btn, #emoji-btn, #voice-btn { width: 42px; height: 42px; border-radius: 12px; }
+      #emoji-btn { font-size: 20px; }
+      #voice-btn { font-size: 18px; }
+      #send-btn svg { width: 18px; height: 18px; }
+      #emoji-picker-wrap { left: 8px; right: 8px; bottom: 68px; margin: auto; max-width: unset; }
+      em-emoji-picker { width: 100% !important; height: 300px; }
+      #viewer-overlay { width: 170px; left: 10px; bottom: 10px; padding: 6px; border-radius: 16px; }
+      #viewer-video { border-radius: 10px; }
+      #viewer-label { font-size: 12px; }
+      .join-card { width: 100%; max-width: 380px; padding: 30px 20px; border-radius: 20px; }
+      .join-card .logo { font-size: 44px; }
+      .join-card h1 { font-size: 22px; }
+      .join-card p { font-size: 13px; margin-bottom: 22px; }
+      .join-input, .join-btn { font-size: 14px; padding: 12px 14px; }
     }
 
     @media (max-width: 420px) {
-      #chat-header {
-        padding: 10px 12px;
-      }
-
-      #chat-header h2 {
-        font-size: 14px;
-      }
-
-      .msg {
-        max-width: 92%;
-      }
-
-      .msg-bubble {
-        font-size: 13.5px;
-        padding: 9px 12px;
-      }
-
-      #send-btn,
-      #emoji-btn,
-      #voice-btn {
-        width: 40px;
-        height: 40px;
-      }
-
-      #msg-input {
-        font-size: 13.5px;
-      }
-
-      #viewer-overlay {
-        width: 150px;
-      }
-
-      .voice-bubble {
-        gap: 8px;
-        padding: 8px 10px;
-      }
-
-      .voice-play-btn {
-        width: 30px;
-        height: 30px;
-      }
+      #chat-header { padding: 10px 12px; }
+      #chat-header h2 { font-size: 14px; }
+      .msg { max-width: 92%; }
+      .msg-bubble { font-size: 13.5px; padding: 9px 12px; }
+      #send-btn, #emoji-btn, #voice-btn { width: 40px; height: 40px; }
+      #msg-input { font-size: 13.5px; }
+      #viewer-overlay { width: 150px; }
+      .voice-bubble { gap: 8px; padding: 8px 10px; }
+      .voice-play-btn { width: 30px; height: 30px; }
     }
   </style>
 </head>
@@ -913,13 +730,7 @@
       <div class="logo">💬</div>
       <h1>شات سريع</h1>
       <p>ادخل اسمك وابدأ المحادثة فوراً</p>
-      <input
-        id="username-input"
-        class="join-input"
-        type="text"
-        placeholder="اسمك هنا..."
-        maxlength="20"
-      />
+      <input id="username-input" class="join-input" type="text" placeholder="اسمك هنا..." maxlength="20" />
       <button class="join-btn" onclick="joinChat()">دخول →</button>
     </div>
   </div>
@@ -945,26 +756,15 @@
 
       <div id="input-area">
         <div id="emoji-picker-wrap"></div>
-
         <button id="send-btn" onclick="sendMessage()" title="إرسال">
-          <svg viewBox="0 0 24 24">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
-
-        <textarea
-          id="msg-input"
-          placeholder="اكتب رسالتك..."
-          rows="1"
-          onkeydown="handleKey(event)"
-          oninput="autoResize(this); handleTyping()"
-        ></textarea>
-
+        <textarea id="msg-input" placeholder="اكتب رسالتك..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this); handleTyping()"></textarea>
         <div id="rec-timer">
           <div class="rec-dot"></div>
           <span id="rec-time">0:00</span>
         </div>
-
         <button id="emoji-btn" onclick="toggleEmojiPicker()" title="إيموجي">😊</button>
         <button id="voice-btn" onclick="toggleRecording()" title="تسجيل صوتي + فيديو">🎙️</button>
       </div>
@@ -974,12 +774,8 @@
   <div id="viewer-overlay">
     <div id="viewer-label">
       📡 بث مباشر
-      <button
-        onclick="toggleViewerSize()"
-        style="background:none;border:none;color:var(--green);cursor:pointer;font-size:16px;margin-right:8px;"
-      >
-        ⛶
-      </button>
+      <button onclick="toggleViewerSize()"
+        style="background:none;border:none;color:var(--green);cursor:pointer;font-size:16px;margin-right:8px;">⛶</button>
     </div>
     <video id="viewer-video" autoplay playsinline></video>
     <button class="stream-btn close" onclick="closeViewer()">✕ إغلاق</button>
@@ -987,87 +783,52 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io({
-      transports: ["websocket", "polling"]
-    });
+    const socket = io({ transports: ["websocket", "polling"] });
 
-    let myId = null;
-    let myName = '';
-    let typingTimer = null;
-    let isTyping = false;
+    let myId = null, myName = '';
+    let typingTimer = null, isTyping = false;
+    let pickerInstance = null, pickerOpen = false;
+    let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
+    let streamPC = null, localStreamObj = null, localStreamStarted = false;
 
-    let pickerInstance = null;
-    let pickerOpen = false;
+    const iceServers = {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      ]
+    };
 
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let recInterval = null;
-    let recSeconds = 0;
+    // Heartbeat - يمنع القطع
+    socket.on("ping", () => socket.emit("pong"));
 
-    let streamPC = null;
-    let localStreamObj = null;
-    let localStreamStarted = false;
-
-   const iceServers = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    {
-      urls: 'turn:openrelay.metered.ca:80',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    },
-    {
-      urls: 'turn:openrelay.metered.ca:443?transport=tcp',
-      username: 'openrelayproject',
-      credential: 'openrelayproject'
-    }
-  ]
-};
     function joinChat() {
       const input = document.getElementById('username-input');
       const name = input.value.trim();
-
-      if (!name) {
-        input.focus();
-        return;
-      }
-
+      if (!name) { input.focus(); return; }
       myName = name;
       socket.emit('join', name);
       document.getElementById('join-screen').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
-
-      setTimeout(() => {
-        scrollDown(true);
-      }, 50);
+      setTimeout(() => scrollDown(true), 50);
     }
 
     document.getElementById('username-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') joinChat();
     });
 
-    socket.on('connect', () => {
-      myId = socket.id;
-    });
+    socket.on('connect', () => { myId = socket.id; });
 
     socket.on('history', (history) => {
       history.forEach(msg => {
         if (!msg.text) return;
-        const fakeMsg = { ...msg, id: msg.username === myName ? myId : 'other' };
-        appendMessage(fakeMsg, false);
+        appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false);
       });
-
       scrollDown(true);
     });
 
-    socket.on('message', (data) => {
-      appendMessage(data, true);
-    });
+    socket.on('message', (data) => appendMessage(data, true));
 
     socket.on('system', (data) => {
       const msgs = document.getElementById('messages');
@@ -1081,10 +842,8 @@
     socket.on('users', (users) => {
       const list = document.getElementById('users-list');
       const count = document.getElementById('online-count');
-
       list.innerHTML = '';
       count.textContent = `${users.length} أونلاين`;
-
       users.forEach(name => {
         const el = document.createElement('div');
         el.className = 'user-item';
@@ -1101,11 +860,8 @@
     function sendMessage() {
       const input = document.getElementById('msg-input');
       const text = input.value.trim();
-
       if (!text) return;
-
       socket.emit('message', { text });
-
       input.value = '';
       input.style.height = 'auto';
       clearTyping();
@@ -1115,7 +871,6 @@
     function appendMessage(data, shouldScroll = true) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
-
       const el = document.createElement('div');
       el.className = `msg ${isMe ? 'me' : 'other'}`;
       el.innerHTML = `
@@ -1123,32 +878,20 @@
         <div class="msg-bubble">${formatText(data.text || '')}</div>
         <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
-
       msgs.appendChild(el);
-
-      if (shouldScroll) {
-        scrollDown(true);
-      }
+      if (shouldScroll) scrollDown(true);
     }
 
     function escapeHtml(str) {
       return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
     }
 
-    function formatText(str) {
-      return escapeHtml(str).replace(/\n/g, '<br>');
-    }
+    function formatText(str) { return escapeHtml(str).replace(/\n/g, '<br>'); }
 
     function handleKey(e) {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     }
 
     function autoResize(el) {
@@ -1158,11 +901,7 @@
     }
 
     function handleTyping() {
-      if (!isTyping) {
-        isTyping = true;
-        socket.emit('typing', true);
-      }
-
+      if (!isTyping) { isTyping = true; socket.emit('typing', true); }
       clearTimeout(typingTimer);
       typingTimer = setTimeout(clearTyping, 1000);
     }
@@ -1176,53 +915,32 @@
     function scrollDown(force = false) {
       const msgs = document.getElementById('messages');
       const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 150;
-
-      if (force || nearBottom) {
-        requestAnimationFrame(() => {
-          msgs.scrollTop = msgs.scrollHeight;
-        });
-      }
+      if (force || nearBottom) requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
     }
 
     function keepInputVisible() {
       const inputArea = document.getElementById('input-area');
-      setTimeout(() => {
-        inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' });
-      }, 30);
+      setTimeout(() => inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' }), 30);
     }
 
     function toggleEmojiPicker() {
       const wrap = document.getElementById('emoji-picker-wrap');
-
-      if (pickerOpen) {
-        wrap.classList.remove('open');
-        pickerOpen = false;
-        return;
-      }
-
+      if (pickerOpen) { wrap.classList.remove('open'); pickerOpen = false; return; }
       if (!pickerInstance) {
         pickerInstance = new EmojiMart.Picker({
           onEmojiSelect: (emoji) => {
             const input = document.getElementById('msg-input');
             const pos = input.selectionStart;
-            const val = input.value;
-
-            input.value = val.slice(0, pos) + emoji.native + val.slice(pos);
+            input.value = input.value.slice(0, pos) + emoji.native + input.value.slice(pos);
             input.focus();
             input.selectionStart = input.selectionEnd = pos + emoji.native.length;
-
             autoResize(input);
           },
-          locale: 'ar',
-          theme: 'dark',
-          set: 'native',
-          skinTonePosition: 'search',
-          previewPosition: 'none',
+          locale: 'ar', theme: 'dark', set: 'native',
+          skinTonePosition: 'search', previewPosition: 'none',
         });
-
         wrap.appendChild(pickerInstance);
       }
-
       wrap.classList.add('open');
       pickerOpen = true;
       keepInputVisible();
@@ -1231,7 +949,6 @@
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('emoji-picker-wrap');
       const btn = document.getElementById('emoji-btn');
-
       if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) {
         wrap.classList.remove('open');
         pickerOpen = false;
@@ -1248,14 +965,19 @@
 
       streamPC = new RTCPeerConnection(iceServers);
 
-      localStreamObj.getTracks().forEach(track => {
-        streamPC.addTrack(track, localStreamObj);
-      });
+      streamPC.onconnectionstatechange = () => {
+        console.log('Streamer state:', streamPC.connectionState);
+      };
+
+      streamPC.oniceconnectionstatechange = () => {
+        console.log('Streamer ICE:', streamPC.iceConnectionState);
+        if (streamPC.iceConnectionState === 'failed') streamPC.restartIce();
+      };
+
+      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
 
       streamPC.onicecandidate = (e) => {
-        if (e.candidate) {
-          socket.emit('stream-ice', { candidate: e.candidate });
-        }
+        if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate });
       };
 
       const offer = await streamPC.createOffer();
@@ -1266,45 +988,35 @@
     }
 
     async function toggleRecording() {
-      // لو التسجيل شغال -> وقف التسجيل فقط
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
         return;
       }
 
       try {
-        // افتح البث مرة واحدة فقط
         await startLocalStreamOnce();
 
         const audioTrack = localStreamObj.getAudioTracks()[0];
-        if (!audioTrack) {
-          alert("الميكروفون غير متاح");
-          return;
-        }
+        if (!audioTrack) { alert("الميكروفون غير متاح"); return; }
 
         const audioStream = new MediaStream([audioTrack]);
         mediaRecorder = new MediaRecorder(audioStream, {
           mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-            ? 'audio/webm;codecs=opus'
-            : 'audio/webm'
+            ? 'audio/webm;codecs=opus' : 'audio/webm'
         });
 
         audioChunks = [];
         recSeconds = 0;
 
         mediaRecorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) {
-            audioChunks.push(e.data);
-          }
+          if (e.data && e.data.size > 0) audioChunks.push(e.data);
         };
 
         mediaRecorder.onstop = () => {
           const duration = recSeconds;
           stopRecordingUI();
-
           setTimeout(() => {
             if (!audioChunks.length) return;
-
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
             sendVoiceMessage(blob, duration);
             mediaRecorder = null;
@@ -1327,7 +1039,6 @@
       document.getElementById('rec-timer').classList.add('show');
       document.getElementById('msg-input').style.display = 'none';
       document.getElementById('emoji-btn').style.display = 'none';
-
       clearInterval(recInterval);
       recInterval = setInterval(() => {
         recSeconds++;
@@ -1349,18 +1060,13 @@
 
     function sendVoiceMessage(blob, duration) {
       const reader = new FileReader();
-
       reader.onloadend = () => {
-        const base64 = reader.result.split(',')[1];
-        socket.emit('voice', { audio: base64, duration });
+        socket.emit('voice', { audio: reader.result.split(',')[1], duration });
       };
-
       reader.readAsDataURL(blob);
     }
 
-    socket.on('voice', (data) => {
-      appendVoiceMessage(data);
-    });
+    socket.on('voice', (data) => appendVoiceMessage(data));
 
     function appendVoiceMessage(data) {
       const msgs = document.getElementById('messages');
@@ -1380,7 +1086,6 @@
         </div>
         <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
-
       msgs.appendChild(el);
       scrollDown(true);
     }
@@ -1389,14 +1094,8 @@
       const audio = new Audio(src);
       btn.textContent = '⏸';
       audio.play();
-
-      audio.onended = () => {
-        btn.textContent = '▶';
-      };
-
-      audio.onpause = () => {
-        btn.textContent = '▶';
-      };
+      audio.onended = () => { btn.textContent = '▶'; };
+      audio.onpause = () => { btn.textContent = '▶'; };
     }
 
     function generateBars() {
@@ -1406,21 +1105,36 @@
 
     function formatDuration(s) {
       const m = Math.floor(s / 60);
-      const sec = s % 60;
-      return `${m}:${sec.toString().padStart(2,'0')}`;
+      return `${m}:${(s % 60).toString().padStart(2,'0')}`;
     }
 
     socket.on('stream-offer', async ({ offer }) => {
       const pc = new RTCPeerConnection(iceServers);
 
       pc.ontrack = (e) => {
-        document.getElementById('viewer-video').srcObject = e.streams[0];
+        const video = document.getElementById('viewer-video');
+        if (e.streams && e.streams[0]) {
+          video.srcObject = e.streams[0];
+          video.play().catch(err => console.log('play error:', err));
+        }
+      };
+
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'failed') pc.restartIce();
+      };
+
+      pc.oniceconnectionstatechange = () => {
+        console.log('ICE state:', pc.iceConnectionState);
+        if (pc.iceConnectionState === 'disconnected') {
+          setTimeout(() => {
+            if (pc.iceConnectionState === 'disconnected') pc.restartIce();
+          }, 3000);
+        }
       };
 
       pc.onicecandidate = (e) => {
-        if (e.candidate) {
-          socket.emit('stream-ice', { candidate: e.candidate });
-        }
+        if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate });
       };
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
@@ -1433,41 +1147,26 @@
     });
 
     socket.on('stream-answer', async ({ answer }) => {
-      if (streamPC) {
-        await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
-      }
+      if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
     });
 
     socket.on('stream-ice', async ({ candidate }) => {
       const pc = streamPC || window._viewerPC;
-
       try {
-        if (pc) {
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
-        }
-      } catch (e) {
-        console.error(e);
-      }
+        if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      } catch (e) { console.error(e); }
     });
 
     socket.on('stream-end', () => {
       document.getElementById('viewer-video').srcObject = null;
       document.getElementById('viewer-overlay').classList.remove('active');
-
-      if (window._viewerPC) {
-        window._viewerPC.close();
-        window._viewerPC = null;
-      }
+      if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     });
 
     function closeViewer() {
       document.getElementById('viewer-video').srcObject = null;
       document.getElementById('viewer-overlay').classList.remove('active');
-
-      if (window._viewerPC) {
-        window._viewerPC.close();
-        window._viewerPC = null;
-      }
+      if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     }
 
     const vo = document.getElementById('viewer-overlay');
@@ -1475,7 +1174,6 @@
 
     vo.addEventListener('mousedown', e => {
       if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
-
       dragging = true;
       ox = e.clientX - vo.offsetLeft;
       oy = e.clientY - vo.offsetTop;
@@ -1489,15 +1187,10 @@
       vo.style.bottom = 'auto';
     });
 
-    document.addEventListener('mouseup', () => {
-      dragging = false;
-      vo.style.cursor = 'grab';
-    });
+    document.addEventListener('mouseup', () => { dragging = false; vo.style.cursor = 'grab'; });
 
     vo.addEventListener('touchstart', e => {
-      const target = e.target.tagName;
-      if (target === 'BUTTON' || target === 'VIDEO') return;
-
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
       const touch = e.touches[0];
       dragging = true;
       ox = touch.clientX - vo.offsetLeft;
@@ -1512,9 +1205,7 @@
       vo.style.bottom = 'auto';
     }, { passive: true });
 
-    document.addEventListener('touchend', () => {
-      dragging = false;
-    });
+    document.addEventListener('touchend', () => { dragging = false; });
 
     let isLarge = false;
     function toggleViewerSize() {
@@ -1524,29 +1215,15 @@
         : (window.innerWidth <= 768 ? '170px' : '260px');
     }
 
-    window.addEventListener('resize', () => {
-      keepInputVisible();
-      scrollDown();
-    });
+    window.addEventListener('resize', () => { keepInputVisible(); scrollDown(); });
 
     document.getElementById('msg-input').addEventListener('focus', () => {
-      setTimeout(() => {
-        keepInputVisible();
-        scrollDown(true);
-      }, 200);
+      setTimeout(() => { keepInputVisible(); scrollDown(true); }, 200);
     });
 
-    // لما الصفحة تتقفل، البث يقف طبيعي لأن socket هيفصل
     window.addEventListener('beforeunload', () => {
-      if (streamPC) {
-        try { streamPC.close(); } catch (e) {}
-      }
-
-      if (localStreamObj) {
-        localStreamObj.getTracks().forEach(track => {
-          try { track.stop(); } catch (e) {}
-        });
-      }
+      if (streamPC) { try { streamPC.close(); } catch (e) {} }
+      if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
     });
   </script>
 </body>

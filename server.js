@@ -8,9 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   transports: ["websocket", "polling"],
-  cors: {
-    origin: "*"
-  }
+  cors: { origin: "*" }
 });
 
 app.use(express.static(path.join(__dirname, "public")));
@@ -32,6 +30,12 @@ try {
 const users = {};
 
 io.on("connection", (socket) => {
+
+  // Heartbeat - يمنع القطع
+  const keepAlive = setInterval(() => {
+    socket.emit("ping");
+  }, 25000);
+
   socket.on("join", (username) => {
     users[socket.id] = username;
     socket.username = username;
@@ -61,11 +65,7 @@ io.on("connection", (socket) => {
     };
 
     messages.push(msgData);
-
-    // بث فوري
     io.emit("message", msgData);
-
-    // حفظ بدون تعطيل الرد
     saveMessages();
   });
 
@@ -83,10 +83,8 @@ io.on("connection", (socket) => {
       type: "voice"
     };
 
-    // بث فوري
     io.emit("voice", voiceData);
 
-    // نحفظ metadata فقط عشان الملف مايكبرش جدًا
     messages.push({
       id: socket.id,
       username,
@@ -111,13 +109,13 @@ io.on("connection", (socket) => {
       answer: data.answer
     });
   });
-// ✅ صح - نفس الكود بس تأكد إنه broadcast مش emit
-socket.on("stream-ice", (data) => {
-  socket.broadcast.emit("stream-ice", {
-    candidate: data.candidate,
-    from: socket.id
+
+  socket.on("stream-ice", (data) => {
+    socket.broadcast.emit("stream-ice", {
+      candidate: data.candidate,
+      from: socket.id
+    });
   });
-});
 
   socket.on("typing", (isTyping) => {
     socket.broadcast.emit("typing", {
@@ -127,9 +125,9 @@ socket.on("stream-ice", (data) => {
   });
 
   socket.on("disconnect", () => {
+    clearInterval(keepAlive);
     const username = users[socket.id];
 
-    // لما الشخص يخرج فقط نقفل البث عند الناس التانية
     socket.broadcast.emit("stream-end", { from: socket.id });
 
     if (username) {
@@ -151,9 +149,7 @@ function saveMessages() {
   }
 
   fs.writeFile(MESSAGES_FILE, JSON.stringify(messages), (err) => {
-    if (err) {
-      console.error("Error saving messages:", err);
-    }
+    if (err) console.error("Error saving messages:", err);
   });
 }
 
