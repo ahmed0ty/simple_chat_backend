@@ -523,16 +523,14 @@
     socket.on("ping", () => socket.emit("pong"));
 
     // ===== JOIN =====
-    function joinChat() {
-      const input = document.getElementById('username-input');
-      const name = input.value.trim();
-      if (!name) { input.focus(); return; }
-      myName = name;
-      socket.emit('join', name);
-      document.getElementById('join-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'flex';
-      setTimeout(() => scrollDown(true), 50);
-    }
+   function joinChat() {
+  const input = document.getElementById('username-input');
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  myName = name;
+  // بعت الطلب بس مش هفتح الشات لحد ما السيرفر يوافق
+  socket.emit('join', name);
+}
     document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
     socket.on('connect', () => { myId = socket.id; });
 
@@ -545,9 +543,12 @@ socket.on('join-rejected', (data) => {
 });
 
     socket.on('history', (history) => {
-      history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false); });
-      scrollDown(true);
-    });
+  // السيرفر وافق → دلوقتي افتح الشات
+  document.getElementById('join-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === 'المالك' && myName === 'ahmedtony@#' ? myId : (msg.username === myName ? myId : 'other') }, false); });
+  scrollDown(true);
+});
     socket.on('message', (data) => appendMessage(data, true));
 
     socket.on('system', (data) => {
