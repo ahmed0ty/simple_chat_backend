@@ -180,17 +180,21 @@ io.on("connection", (socket) => {
   socket.on("join", (username) => {
     const name = (username || "").trim();
 
-    if (getRoomCount() >= 2) {
-      socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
-      socket.disconnect(true);
-      return;
-    }
+   if (getRoomCount() >= 2) {
+  socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
+  socket.disconnect(true);
+  return;
+}
 
-    if (!isOwnerOnline() && name !== OWNER_NAME) {
-      socket.emit("join-rejected", { reason: "مش مسموح بالدخول بدون المالك." });
-      socket.disconnect(true);
-      return;
-    }
+users[socket.id] = name;
+socket.username = name;
+
+if (!isOwnerOnline() && name !== OWNER_NAME) {
+  socket.emit("join-rejected", { reason: "مش مسموح بالدخول بدون المالك." });
+  delete users[socket.id];
+  socket.disconnect(true);
+  return;
+}
 
     users[socket.id] = name;
     socket.username = name;
