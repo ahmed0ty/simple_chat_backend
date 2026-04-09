@@ -536,6 +536,14 @@
     document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
     socket.on('connect', () => { myId = socket.id; });
 
+    socket.on('connect', () => { myId = socket.id; });
+
+socket.on('join-rejected', (data) => {
+  document.getElementById('join-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  alert(data.reason);
+});
+
     socket.on('history', (history) => {
       history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false); });
       scrollDown(true);
