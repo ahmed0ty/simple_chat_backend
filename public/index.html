@@ -458,30 +458,38 @@
   </div>
 
   <!-- VIEWER OVERLAY - البث المباشر القابل للسحب والتكبير -->
-  <div id="viewer-overlay">
-    <div id="viewer-header">
-      <div id="viewer-label">
-        <div class="live-dot"></div>
-        بث مباشر
-      </div>
-      <div class="viewer-controls">
-        <!-- تصغير -->
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('small')" title="تصغير">⊟</button>
-        <!-- تكبير متوسط -->
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')" title="توسيع">⊞</button>
-        <!-- ملء الشاشة -->
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('full')" title="ملء الشاشة">⛶</button>
-        <!-- إغلاق -->
-        <button class="viewer-ctrl-btn danger" onclick="closeViewer()" title="إغلاق">✕</button>
-      </div>
+  <!-- VIEWER OVERLAY - البث المباشر القابل للسحب والتكبير -->
+<div id="viewer-overlay">
+  <div id="viewer-header">
+    <div id="viewer-label">
+      <div class="live-dot"></div>
+      بث مباشر
     </div>
-    <video id="viewer-video" autoplay playsinline muted></video>
-    <div id="rec-stream-indicator">
-      <div class="rec-dot"></div>
-      <span>جاري تسجيل البث...</span>
-      <span id="rec-stream-time" style="margin-right:auto;opacity:.7">0:00</span>
+    <div class="viewer-controls">
+      <button class="viewer-ctrl-btn" onclick="setViewerSize('small')" title="تصغير">⊟</button>
+      <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')" title="توسيع">⊞</button>
+      <button class="viewer-ctrl-btn" onclick="setViewerSize('full')" title="ملء الشاشة">⛶</button>
+      <button class="viewer-ctrl-btn danger" onclick="closeViewer()" title="إغلاق">✕</button>
     </div>
   </div>
+  <div style="position:relative;">
+    <video id="viewer-video" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
+    <!-- زر Play يظهر لو الفيديو مش شغال -->
+    <div id="play-overlay" onclick="manualPlay()" style="
+      display:none; position:absolute; inset:0;
+      background:rgba(0,0,0,.55); cursor:pointer;
+      align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    ">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(79,142,247,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
+      <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
+    </div>
+  </div>
+  <div id="rec-stream-indicator">
+    <div class="rec-dot"></div>
+    <span>جاري تسجيل البث...</span>
+    <span id="rec-stream-time" style="margin-right:auto;opacity:.7">0:00</span>
+  </div>
+</div>
 
   <!-- عرض الصور بالحجم الكامل -->
   <div id="fullscreen-overlay">
@@ -782,45 +790,67 @@
     }
 
     // ===== استقبال البث =====
-    socket.on('stream-offer', async ({ offer }) => {
-      const pc = new RTCPeerConnection(iceServers);
+   socket.on('stream-offer', async ({ offer }) => {
+  const pc = new RTCPeerConnection(iceServers);
 
-      pc.ontrack = (e) => {
-        const video = document.getElementById('viewer-video');
-        if (e.streams && e.streams[0]) {
-          video.srcObject = e.streams[0];
-          video.play().catch(err => console.log('play error:', err));
+  pc.ontrack = (e) => {
+    if (!e.streams || !e.streams[0]) return;
+    const video = document.getElementById('viewer-video');
+    const stream = e.streams[0];
 
-          // بدء تسجيل البث فور وصول الستريم
-          startStreamRecording(e.streams[0]);
-        }
-      };
+    // تأكد إن الـ srcObject اتغير فعلاً
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+    }
 
-      pc.onconnectionstatechange = () => {
-        console.log('Connection state:', pc.connectionState);
-        if (pc.connectionState === 'failed') pc.restartIce();
-      };
+    // محاولة تشغيل مع fallback لو الـ autoplay اتمنع
+    const tryPlay = () => {
+      video.play().then(() => {
+        // شغال — أخفي الـ overlay
+        document.getElementById('play-overlay').style.display = 'none';
+        startStreamRecording(stream);
+      }).catch(err => {
+        console.warn('Autoplay blocked, showing manual play button:', err);
+        // اعرض زر Play اليدوي
+        document.getElementById('play-overlay').style.display = 'flex';
+        // خلي الـ recording يبدأ بعد الضغط
+        window._pendingStream = stream;
+      });
+    };
 
-      pc.oniceconnectionstatechange = () => {
-        console.log('ICE state:', pc.iceConnectionState);
-        if (pc.iceConnectionState === 'disconnected') {
-          setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000);
-        }
-      };
+    // استنى شوية لو الـ stream لسه بيتحمل
+    if (stream.active) {
+      tryPlay();
+    } else {
+      stream.addEventListener('active', tryPlay, { once: true });
+      setTimeout(tryPlay, 500); // fallback بعد نص ثانية
+    }
+  };
 
-      pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+  pc.onconnectionstatechange = () => {
+    console.log('Connection state:', pc.connectionState);
+    if (pc.connectionState === 'failed') pc.restartIce();
+  };
 
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit('stream-answer', { answer });
+  pc.oniceconnectionstatechange = () => {
+    console.log('ICE state:', pc.iceConnectionState);
+    if (pc.iceConnectionState === 'disconnected') {
+      setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000);
+    }
+  };
 
-      window._viewerPC = pc;
-      const overlay = document.getElementById('viewer-overlay');
-      overlay.classList.add('active');
-      // استعادة الحجم الافتراضي عند بدء البث
-      setViewerSize('small');
-    });
+  pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  socket.emit('stream-answer', { answer });
+
+  window._viewerPC = pc;
+  const overlay = document.getElementById('viewer-overlay');
+  overlay.classList.add('active');
+  setViewerSize('small');
+});
 
     socket.on('stream-answer', async ({ answer }) => {
       if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
@@ -904,6 +934,20 @@
       clearInterval(streamRecInterval);
       document.getElementById('rec-stream-indicator').classList.remove('show');
     }
+
+    function manualPlay() {
+  const video = document.getElementById('viewer-video');
+  video.muted = false; // فك الصوت بعد تفاعل المستخدم
+  video.play().then(() => {
+    document.getElementById('play-overlay').style.display = 'none';
+    if (window._pendingStream) {
+      startStreamRecording(window._pendingStream);
+      window._pendingStream = null;
+    }
+  }).catch(err => {
+    console.error('Manual play failed:', err);
+  });
+}
 
     // ===== حجم المشاهد / السحب =====
     function setViewerSize(size) {
