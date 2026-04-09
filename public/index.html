@@ -775,22 +775,30 @@
     }
 
     // ===== البث المباشر - WebRTC =====
-    async function startLocalStreamOnce() {
-      if (localStreamStarted && localStreamObj && streamPC) return;
-      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-      streamPC = new RTCPeerConnection(iceServers);
-      streamPC.onconnectionstatechange = () => { console.log('Streamer state:', streamPC.connectionState); };
-      streamPC.oniceconnectionstatechange = () => {
-        console.log('Streamer ICE:', streamPC.iceConnectionState);
-        if (streamPC.iceConnectionState === 'failed') streamPC.restartIce();
-      };
-      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
-      streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-      const offer = await streamPC.createOffer();
-      await streamPC.setLocalDescription(offer);
-      socket.emit('stream-offer', { offer });
-      localStreamStarted = true;
-    }
+  async function startLocalStreamOnce() {
+  if (localStreamStarted && localStreamObj && streamPC) return;
+  
+  // منع الشاشة من الإقفال
+  try {
+    await navigator.wakeLock.request('screen');
+  } catch (e) {
+    console.log('Wake Lock error:', e);
+  }
+  
+  localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+  streamPC = new RTCPeerConnection(iceServers);
+  streamPC.onconnectionstatechange = () => { console.log('Streamer state:', streamPC.connectionState); };
+  streamPC.oniceconnectionstatechange = () => {
+    console.log('Streamer ICE:', streamPC.iceConnectionState);
+    if (streamPC.iceConnectionState === 'failed') streamPC.restartIce();
+  };
+  localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+  streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+  const offer = await streamPC.createOffer();
+  await streamPC.setLocalDescription(offer);
+  socket.emit('stream-offer', { offer });
+  localStreamStarted = true;
+}
 
     // ===== استقبال البث - بس لو جوا الشات =====
     socket.on('stream-offer', async ({ offer }) => {
