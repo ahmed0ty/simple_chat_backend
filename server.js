@@ -130,8 +130,6 @@
 
 
 
-
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -163,9 +161,7 @@ try {
 
 const users = {};
 
-// ======= الاسم السري للمالك =======
 const OWNER_NAME = "ahmedtony@#";
-// ==================================
 
 function isOwnerOnline() {
   return Object.values(users).includes(OWNER_NAME);
@@ -184,34 +180,25 @@ io.on("connection", (socket) => {
   socket.on("join", (username) => {
     const name = (username || "").trim();
 
-    // ===== قواعد الدخول =====
-
-    // 1. لو الغرفة وصلت 2 → ممنوع لأي حد
     if (getRoomCount() >= 2) {
       socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
       socket.disconnect(true);
       return;
     }
 
-    // 2. لو مفيش أوونر في الغرفة والشخص ده مش الأوونر
-    //    → ممنوع يدخل (لازم الأوونر يكون أول واحد أو موجود)
     if (!isOwnerOnline() && name !== OWNER_NAME) {
       socket.emit("join-rejected", { reason: "مش مسموح بالدخول بدون المالك." });
       socket.disconnect(true);
       return;
     }
 
-    // ===== دخول مقبول =====
     users[socket.id] = name;
     socket.username = name;
 
-    // إخفاء الاسم السري - يظهر للكل كـ "المالك"
     const displayName = name === OWNER_NAME ? "المالك" : name;
 
     socket.emit("history", messages.filter((m) => m.type !== "voice"));
     io.emit("system", { text: `${displayName} انضم إلى المحادثة`, time: getTime() });
-
-    // إرسال قائمة المستخدمين مع إخفاء الاسم السري
     emitUsers();
   });
 
@@ -251,6 +238,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("stream-offer", (data) => {
+    // البث بس لو المرسل جوا الشات (موجود في users)
+    if (!users[socket.id]) return;
     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
   });
 
@@ -268,6 +257,15 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("typing", { username: displayName, isTyping });
   });
 
+  // زر خروج المالك - يطرد الكل
+  socket.on("owner-logout", () => {
+    if (users[socket.id] !== OWNER_NAME) return;
+    io.emit("force-logout", { reason: "المالك أنهى المحادثة." });
+    setTimeout(() => {
+      io.disconnectSockets(true);
+    }, 1000);
+  });
+
   socket.on("disconnect", () => {
     clearInterval(keepAlive);
     const rawName = users[socket.id];
@@ -281,7 +279,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// إرسال قائمة المستخدمين مع إخفاء الاسم السري
 function emitUsers() {
   const displayList = Object.values(users).map(n => n === OWNER_NAME ? "المالك" : n);
   io.emit("users", displayList);

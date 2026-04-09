@@ -114,6 +114,14 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     #chat-header span { font-size: 12px; color: var(--green); margin-right: auto; }
+    #owner-logout-btn {
+      display: none; margin-right: 8px; padding: 6px 14px;
+      background: rgba(239,68,68,.15); border: 1px solid #ef4444;
+      border-radius: 10px; color: #ef4444;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; flex-shrink: 0; transition: background .2s;
+    }
+    #owner-logout-btn:hover { background: rgba(239,68,68,.3); }
     #messages {
       flex: 1; overflow-y: auto; padding: 20px 20px 10px;
       display: flex; flex-direction: column; gap: 10px;
@@ -138,7 +146,6 @@
       border-radius: 20px; align-self: center; animation: fadeIn .3s; max-width: 95%;
     }
 
-    /* صور وفيديوهات في الشات */
     .msg-media-wrap { max-width: 100%; }
     .msg-media-img {
       max-width: 240px; max-height: 240px; border-radius: 14px;
@@ -150,7 +157,6 @@
       display: block; background: #000; outline: none;
     }
 
-    /* INPUT */
     #typing-indicator {
       min-height: 24px; padding: 0 20px 8px; font-size: 13px;
       color: var(--muted); font-style: italic; flex-shrink: 0;
@@ -170,7 +176,6 @@
     }
     #msg-input:focus { border-color: var(--accent); }
     #msg-input::placeholder { color: var(--muted); }
-
     #send-btn {
       width: 46px; height: 46px; flex-shrink: 0;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
@@ -181,7 +186,6 @@
     #send-btn:hover { opacity: .9; transform: scale(1.05); }
     #send-btn:active { transform: scale(.97); }
     #send-btn svg { width: 20px; height: 20px; fill: #fff; }
-
     #emoji-btn, #voice-btn, #media-btn {
       width: 46px; height: 46px; flex-shrink: 0;
       background: var(--surface2); border: 1px solid var(--border);
@@ -196,7 +200,6 @@
       background: rgba(239,68,68,.15); border-color: #ef4444;
       animation: pulse-red 1s infinite;
     }
-
     #emoji-picker-wrap {
       position: absolute; bottom: 76px; left: 16px; z-index: 999;
       display: none; border-radius: 16px; overflow: hidden;
@@ -209,7 +212,6 @@
       --border-radius: 0; height: 380px; width: 340px; max-width: 100%;
     }
 
-    /* تسجيل صوتي */
     .voice-bubble {
       display: flex; align-items: center; gap: 10px; padding: 10px 14px; width: 100%;
     }
@@ -228,7 +230,6 @@
     .voice-waveform span { display: inline-block; width: 3px; border-radius: 2px; background: rgba(255,255,255,.6); }
     .msg.other .voice-waveform span { background: var(--accent); opacity: .7; }
     .voice-duration { font-size: 11px; opacity: .7; white-space: nowrap; flex-shrink: 0; }
-
     #rec-timer {
       display: none; align-items: center; gap: 8px;
       font-size: 13px; color: #ef4444; font-weight: 700; flex-shrink: 0;
@@ -239,46 +240,27 @@
       animation: pulse-red 1s infinite;
     }
 
-    /* ===== VIEWER OVERLAY - قابل للسحب والتكبير ===== */
     #viewer-overlay {
-      display: none;
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 280px;
-      border-radius: 20px;
-      z-index: 9999;
-      flex-direction: column;
-      align-items: stretch;
-      background: rgba(13,15,20,.92);
-      border: 1.5px solid var(--green);
+      display: none; position: fixed; bottom: 20px; left: 20px; width: 280px;
+      border-radius: 20px; z-index: 9999; flex-direction: column; align-items: stretch;
+      background: rgba(13,15,20,.92); border: 1.5px solid var(--green);
       box-shadow: 0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(34,217,138,.15);
-      cursor: grab;
-      touch-action: none;
-      overflow: hidden;
-      user-select: none;
+      cursor: grab; touch-action: none; overflow: hidden; user-select: none;
       transition: width .25s, height .25s, border-radius .25s;
     }
     #viewer-overlay.active { display: flex; }
     #viewer-overlay.fullscreen-mode {
-      width: 100vw !important;
-      height: 100dvh !important;
+      width: 100vw !important; height: 100dvh !important;
       top: 0 !important; left: 0 !important;
       bottom: auto !important; right: auto !important;
-      border-radius: 0 !important;
-      cursor: default;
+      border-radius: 0 !important; cursor: default;
     }
-
     #viewer-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px;
-      background: rgba(34,217,138,.08);
-      border-bottom: 1px solid rgba(34,217,138,.15);
-      flex-shrink: 0;
-      cursor: grab;
+      padding: 8px 12px; background: rgba(34,217,138,.08);
+      border-bottom: 1px solid rgba(34,217,138,.15); flex-shrink: 0; cursor: grab;
     }
     #viewer-overlay.fullscreen-mode #viewer-header { cursor: default; }
-
     #viewer-label {
       font-size: 13px; font-weight: 700; color: var(--green);
       display: flex; align-items: center; gap: 6px;
@@ -287,7 +269,6 @@
       width: 7px; height: 7px; border-radius: 50%; background: #ef4444;
       animation: pulse-red 1s infinite; flex-shrink: 0;
     }
-
     .viewer-controls { display: flex; align-items: center; gap: 6px; }
     .viewer-ctrl-btn {
       width: 28px; height: 28px; border-radius: 8px;
@@ -298,37 +279,26 @@
     }
     .viewer-ctrl-btn:hover { background: rgba(255,255,255,.16); }
     .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: #ef4444; color: #ef4444; }
-
     #viewer-video {
       width: 100%; display: block; background: #000;
-      aspect-ratio: 4/3; object-fit: cover;
-      flex-shrink: 0;
+      aspect-ratio: 4/3; object-fit: cover; flex-shrink: 0;
     }
     #viewer-overlay.fullscreen-mode #viewer-video {
-      height: calc(100dvh - 44px);
-      aspect-ratio: unset;
-      object-fit: contain;
+      height: calc(100dvh - 44px); aspect-ratio: unset; object-fit: contain;
     }
-
-    /* مؤشر تسجيل البث */
     #rec-stream-indicator {
       display: none; align-items: center; gap: 6px;
       padding: 4px 12px; font-size: 11px; color: #ef4444; font-weight: 700;
-      background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15);
-      flex-shrink: 0;
+      background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0;
     }
     #rec-stream-indicator.show { display: flex; }
 
-    /* FULLSCREEN - عرض كامل */
     #fullscreen-overlay {
       display: none; position: fixed; inset: 0; z-index: 99999;
-      background: #000; align-items: center; justify-content: center;
-      flex-direction: column;
+      background: #000; align-items: center; justify-content: center; flex-direction: column;
     }
     #fullscreen-overlay.active { display: flex; }
-    #fullscreen-img {
-      max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;
-    }
+    #fullscreen-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
     #fullscreen-close {
       position: absolute; top: 16px; left: 16px;
       background: rgba(255,255,255,.12); border: none; border-radius: 10px;
@@ -336,7 +306,6 @@
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
 
-    /* ANIMATIONS */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
     @keyframes msgPop { from { opacity: 0; transform: scale(.96) translateY(4px); } to { opacity: 1; transform: none; } }
@@ -344,12 +313,10 @@
       0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
       50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
     }
-
     #messages::-webkit-scrollbar { width: 4px; }
     #messages::-webkit-scrollbar-track { background: transparent; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    /* RESPONSIVE */
     @media (max-width: 992px) {
       #app { max-width: 100%; height: 100dvh; border-radius: 0; }
       #sidebar { width: 190px; }
@@ -363,6 +330,7 @@
       .header-icon { font-size: 22px; }
       #chat-header h2 { font-size: 15px; }
       #chat-header span { font-size: 11px; }
+      #owner-logout-btn { font-size: 12px; padding: 5px 10px; }
       #messages { padding: 12px 12px 8px; gap: 8px; }
       .msg { max-width: 88%; }
       .msg-bubble { font-size: 14px; padding: 10px 14px; border-radius: 16px; }
@@ -423,73 +391,59 @@
         <span class="header-icon">💬</span>
         <h2>غرفة المحادثة</h2>
         <span id="status-dot">● متصل</span>
+        <button id="owner-logout-btn" onclick="ownerLogout()">🚪 إنهاء المحادثة</button>
       </div>
       <div id="messages"></div>
       <div id="typing-indicator"></div>
       <div id="input-area">
         <div id="emoji-picker-wrap"></div>
-
-        <!-- زر إرسال -->
         <button id="send-btn" onclick="sendMessage()" title="إرسال">
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
-
-        <!-- حقل الكتابة -->
         <textarea id="msg-input" placeholder="اكتب رسالتك..." rows="1"
           onkeydown="handleKey(event)" oninput="autoResize(this); handleTyping()"></textarea>
-
-        <!-- مؤقت التسجيل الصوتي -->
         <div id="rec-timer">
           <div class="rec-dot"></div>
           <span id="rec-time">0:00</span>
         </div>
-
-        <!-- إيموجي -->
         <button id="emoji-btn" onclick="toggleEmojiPicker()" title="إيموجي">😊</button>
-
-        <!-- رفع صورة / فيديو -->
         <button id="media-btn" onclick="triggerMediaUpload()" title="إرسال صورة أو فيديو">📎</button>
         <input id="media-input" type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)" />
-
-        <!-- تسجيل صوتي + بث كاميرا -->
         <button id="voice-btn" onclick="toggleRecording()" title="تسجيل صوتي">🎙️</button>
       </div>
     </div>
   </div>
 
-  <!-- VIEWER OVERLAY - البث المباشر القابل للسحب والتكبير -->
-  <!-- VIEWER OVERLAY - البث المباشر القابل للسحب والتكبير -->
-<div id="viewer-overlay">
-  <div id="viewer-header">
-    <div id="viewer-label">
-      <div class="live-dot"></div>
-      بث مباشر
+  <!-- VIEWER OVERLAY -->
+  <div id="viewer-overlay">
+    <div id="viewer-header">
+      <div id="viewer-label">
+        <div class="live-dot"></div>
+        بث مباشر
+      </div>
+      <div class="viewer-controls">
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('small')" title="تصغير">⊟</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')" title="توسيع">⊞</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('full')" title="ملء الشاشة">⛶</button>
+        <button class="viewer-ctrl-btn danger" onclick="closeViewer()" title="إغلاق">✕</button>
+      </div>
     </div>
-    <div class="viewer-controls">
-      <button class="viewer-ctrl-btn" onclick="setViewerSize('small')" title="تصغير">⊟</button>
-      <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')" title="توسيع">⊞</button>
-      <button class="viewer-ctrl-btn" onclick="setViewerSize('full')" title="ملء الشاشة">⛶</button>
-      <button class="viewer-ctrl-btn danger" onclick="closeViewer()" title="إغلاق">✕</button>
+    <div style="position:relative;">
+      <video id="viewer-video" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
+      <div id="play-overlay" onclick="manualPlay()" style="
+        display:none; position:absolute; inset:0;
+        background:rgba(0,0,0,.55); cursor:pointer;
+        align-items:center; justify-content:center; flex-direction:column; gap:8px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(79,142,247,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
+        <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
+      </div>
+    </div>
+    <div id="rec-stream-indicator">
+      <div class="rec-dot"></div>
+      <span>جاري تسجيل البث...</span>
+      <span id="rec-stream-time" style="margin-right:auto;opacity:.7">0:00</span>
     </div>
   </div>
-  <div style="position:relative;">
-    <video id="viewer-video" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
-    <!-- زر Play يظهر لو الفيديو مش شغال -->
-    <div id="play-overlay" onclick="manualPlay()" style="
-      display:none; position:absolute; inset:0;
-      background:rgba(0,0,0,.55); cursor:pointer;
-      align-items:center; justify-content:center; flex-direction:column; gap:8px;
-    ">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(79,142,247,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
-      <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
-    </div>
-  </div>
-  <div id="rec-stream-indicator">
-    <div class="rec-dot"></div>
-    <span>جاري تسجيل البث...</span>
-    <span id="rec-stream-time" style="margin-right:auto;opacity:.7">0:00</span>
-  </div>
-</div>
 
   <!-- عرض الصور بالحجم الكامل -->
   <div id="fullscreen-overlay">
@@ -506,9 +460,8 @@
     let pickerInstance = null, pickerOpen = false;
     let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
     let streamPC = null, localStreamObj = null, localStreamStarted = false;
-
-    // متغيرات تسجيل البث
     let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
+    let insideChat = false; // flag - هل المستخدم جوا الشات فعلاً
 
     const iceServers = {
       iceServers: [
@@ -523,36 +476,47 @@
     socket.on("ping", () => socket.emit("pong"));
 
     // ===== JOIN =====
-   function joinChat() {
-  const input = document.getElementById('username-input');
-  const name = input.value.trim();
-  if (!name) { input.focus(); return; }
-  myName = name;
-  // بعت الطلب بس مش هفتح الشات لحد ما السيرفر يوافق
-  socket.emit('join', name);
-}
-    document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
-    socket.on('connect', () => { myId = socket.id; });
+    function joinChat() {
+      const input = document.getElementById('username-input');
+      const name = input.value.trim();
+      if (!name) { input.focus(); return; }
+      myName = name;
+      socket.emit('join', name);
+    }
+
+    document.getElementById('username-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') joinChat();
+    });
 
     socket.on('connect', () => { myId = socket.id; });
 
-socket.on('join-rejected', (data) => {
-  document.getElementById('join-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  alert(data.reason);
-});
+    socket.on('join-rejected', (data) => {
+      document.getElementById('join-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      myName = '';
+      insideChat = false;
+      alert(data.reason);
+    });
 
-  socket.on('history', (history) => {
-  document.getElementById('join-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  setTimeout(() => scrollDown(true), 50);
-  if (!Array.isArray(history)) return;
-  history.forEach(msg => {
-    if (!msg.text) return;
-    appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false);
-  });
-  scrollDown(true);
-});
+    socket.on('history', (history) => {
+      insideChat = true;
+      document.getElementById('join-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+
+      // لو المالك → وريه زر الخروج
+      if (myName === 'ahmedtony@#') {
+        document.getElementById('owner-logout-btn').style.display = 'inline-flex';
+      }
+
+      setTimeout(() => scrollDown(true), 50);
+      if (!Array.isArray(history)) return;
+      history.forEach(msg => {
+        if (!msg.text) return;
+        appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false);
+      });
+      scrollDown(true);
+    });
+
     socket.on('message', (data) => appendMessage(data, true));
 
     socket.on('system', (data) => {
@@ -580,6 +544,37 @@ socket.on('join-rejected', (data) => {
     socket.on('typing', ({ username, isTyping }) => {
       document.getElementById('typing-indicator').textContent = isTyping ? `${username} يكتب الآن...` : '';
     });
+
+    // ===== خروج المالك القسري =====
+    function ownerLogout() {
+      if (!confirm('هتنهي المحادثة وتطرد الشخص التاني؟')) return;
+      socket.emit('owner-logout');
+    }
+
+    socket.on('force-logout', (data) => {
+      alert(data.reason);
+      resetToJoinScreen();
+    });
+
+    function resetToJoinScreen() {
+      insideChat = false;
+      myName = '';
+      myId = null;
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('join-screen').style.display = 'flex';
+      document.getElementById('username-input').value = '';
+      document.getElementById('messages').innerHTML = '';
+      document.getElementById('owner-logout-btn').style.display = 'none';
+      document.getElementById('viewer-overlay').classList.remove('active');
+      document.getElementById('viewer-video').srcObject = null;
+      if (localStreamObj) localStreamObj.getTracks().forEach(t => t.stop());
+      if (streamPC) { try { streamPC.close(); } catch(e){} }
+      if (window._viewerPC) { try { window._viewerPC.close(); } catch(e){} window._viewerPC = null; }
+      localStreamStarted = false;
+      localStreamObj = null;
+      streamPC = null;
+      stopStreamRecordingAndDownload();
+    }
 
     // ===== رسائل نصية =====
     function sendMessage() {
@@ -615,14 +610,11 @@ socket.on('join-rejected', (data) => {
     function handleMediaUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
-
-      const maxSize = 15 * 1024 * 1024; // 15MB
+      const maxSize = 15 * 1024 * 1024;
       if (file.size > maxSize) { alert('الملف كبير جداً! الحد الأقصى 15MB'); event.target.value = ''; return; }
-
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
       if (!isImage && !isVideo) { alert('يرجى اختيار صورة أو فيديو فقط'); event.target.value = ''; return; }
-
       const reader = new FileReader();
       reader.onloadend = () => {
         socket.emit('media-upload', {
@@ -642,14 +634,12 @@ socket.on('join-rejected', (data) => {
       const isMe = data.id === myId;
       const el = document.createElement('div');
       el.className = `msg ${isMe ? 'me' : 'other'}`;
-
       let mediaHtml = '';
       if (data.mediaType === 'image') {
         mediaHtml = `<img class="msg-media-img" src="${data.dataUrl}" alt="صورة" onclick="openFullscreen('${data.dataUrl}')" />`;
       } else {
         mediaHtml = `<video class="msg-media-video" src="${data.dataUrl}" controls playsinline></video>`;
       }
-
       el.innerHTML = `
         ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
         <div class="msg-bubble" style="padding:8px;">
@@ -661,7 +651,6 @@ socket.on('join-rejected', (data) => {
       scrollDown(true);
     }
 
-    // ===== عرض صورة كاملة =====
     function openFullscreen(src) {
       document.getElementById('fullscreen-img').src = src;
       document.getElementById('fullscreen-overlay').classList.add('active');
@@ -676,6 +665,7 @@ socket.on('join-rejected', (data) => {
 
     // ===== تسجيل صوتي =====
     async function toggleRecording() {
+      if (!insideChat) return;
       if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
         return;
@@ -802,68 +792,51 @@ socket.on('join-rejected', (data) => {
       localStreamStarted = true;
     }
 
-    // ===== استقبال البث =====
-   socket.on('stream-offer', async ({ offer }) => {
-  const pc = new RTCPeerConnection(iceServers);
+    // ===== استقبال البث - بس لو جوا الشات =====
+    socket.on('stream-offer', async ({ offer }) => {
+      // تجاهل لو مش جوا الشات
+      if (!insideChat) return;
 
-  pc.ontrack = (e) => {
-    if (!e.streams || !e.streams[0]) return;
-    const video = document.getElementById('viewer-video');
-    const stream = e.streams[0];
+      const pc = new RTCPeerConnection(iceServers);
 
-    // تأكد إن الـ srcObject اتغير فعلاً
-    if (video.srcObject !== stream) {
-      video.srcObject = stream;
-    }
+      pc.ontrack = (e) => {
+        if (!e.streams || !e.streams[0]) return;
+        const video = document.getElementById('viewer-video');
+        const stream = e.streams[0];
+        if (video.srcObject !== stream) video.srcObject = stream;
+        const tryPlay = () => {
+          video.play().then(() => {
+            document.getElementById('play-overlay').style.display = 'none';
+            startStreamRecording(stream);
+          }).catch(() => {
+            document.getElementById('play-overlay').style.display = 'flex';
+            window._pendingStream = stream;
+          });
+        };
+        if (stream.active) tryPlay();
+        else { stream.addEventListener('active', tryPlay, { once: true }); setTimeout(tryPlay, 500); }
+      };
 
-    // محاولة تشغيل مع fallback لو الـ autoplay اتمنع
-    const tryPlay = () => {
-      video.play().then(() => {
-        // شغال — أخفي الـ overlay
-        document.getElementById('play-overlay').style.display = 'none';
-        startStreamRecording(stream);
-      }).catch(err => {
-        console.warn('Autoplay blocked, showing manual play button:', err);
-        // اعرض زر Play اليدوي
-        document.getElementById('play-overlay').style.display = 'flex';
-        // خلي الـ recording يبدأ بعد الضغط
-        window._pendingStream = stream;
-      });
-    };
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'failed') pc.restartIce();
+      };
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === 'disconnected') {
+          setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000);
+        }
+      };
+      pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
 
-    // استنى شوية لو الـ stream لسه بيتحمل
-    if (stream.active) {
-      tryPlay();
-    } else {
-      stream.addEventListener('active', tryPlay, { once: true });
-      setTimeout(tryPlay, 500); // fallback بعد نص ثانية
-    }
-  };
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      socket.emit('stream-answer', { answer });
 
-  pc.onconnectionstatechange = () => {
-    console.log('Connection state:', pc.connectionState);
-    if (pc.connectionState === 'failed') pc.restartIce();
-  };
-
-  pc.oniceconnectionstatechange = () => {
-    console.log('ICE state:', pc.iceConnectionState);
-    if (pc.iceConnectionState === 'disconnected') {
-      setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000);
-    }
-  };
-
-  pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-
-  await pc.setRemoteDescription(new RTCSessionDescription(offer));
-  const answer = await pc.createAnswer();
-  await pc.setLocalDescription(answer);
-  socket.emit('stream-answer', { answer });
-
-  window._viewerPC = pc;
-  const overlay = document.getElementById('viewer-overlay');
-  overlay.classList.add('active');
-  setViewerSize('small');
-});
+      window._viewerPC = pc;
+      document.getElementById('viewer-overlay').classList.add('active');
+      setViewerSize('small');
+    });
 
     socket.on('stream-answer', async ({ answer }) => {
       if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
@@ -882,30 +855,18 @@ socket.on('join-rejected', (data) => {
       if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     });
 
-    // ===== تسجيل البث وتنزيله =====
+    // ===== تسجيل البث =====
     function startStreamRecording(stream) {
-      if (streamRecorder) return; // تسجيل شغال فعلاً
-
+      if (streamRecorder) return;
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
         ? 'video/webm;codecs=vp9,opus'
-        : MediaRecorder.isTypeSupported('video/webm')
-        ? 'video/webm'
-        : '';
-
+        : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '';
       try {
         streamRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-      } catch (e) {
-        console.error('MediaRecorder error:', e);
-        return;
-      }
-
+      } catch (e) { console.error('MediaRecorder error:', e); return; }
       streamChunks = [];
       streamRecSeconds = 0;
-
-      streamRecorder.ondataavailable = (e) => {
-        if (e.data && e.data.size > 0) streamChunks.push(e.data);
-      };
-
+      streamRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) streamChunks.push(e.data); };
       streamRecorder.onstop = () => {
         stopStreamRecUI();
         if (streamChunks.length === 0) return;
@@ -920,15 +881,12 @@ socket.on('join-rejected', (data) => {
         streamRecorder = null;
         streamChunks = [];
       };
-
       streamRecorder.start(1000);
       startStreamRecUI();
     }
 
     function stopStreamRecordingAndDownload() {
-      if (streamRecorder && streamRecorder.state !== 'inactive') {
-        streamRecorder.stop();
-      }
+      if (streamRecorder && streamRecorder.state !== 'inactive') streamRecorder.stop();
     }
 
     function startStreamRecUI() {
@@ -949,25 +907,22 @@ socket.on('join-rejected', (data) => {
     }
 
     function manualPlay() {
-  const video = document.getElementById('viewer-video');
-  video.muted = false; // فك الصوت بعد تفاعل المستخدم
-  video.play().then(() => {
-    document.getElementById('play-overlay').style.display = 'none';
-    if (window._pendingStream) {
-      startStreamRecording(window._pendingStream);
-      window._pendingStream = null;
+      const video = document.getElementById('viewer-video');
+      video.muted = false;
+      video.play().then(() => {
+        document.getElementById('play-overlay').style.display = 'none';
+        if (window._pendingStream) {
+          startStreamRecording(window._pendingStream);
+          window._pendingStream = null;
+        }
+      }).catch(err => { console.error('Manual play failed:', err); });
     }
-  }).catch(err => {
-    console.error('Manual play failed:', err);
-  });
-}
 
     // ===== حجم المشاهد / السحب =====
     function setViewerSize(size) {
       const vo = document.getElementById('viewer-overlay');
       vo.classList.remove('fullscreen-mode');
       vo.style.cursor = 'grab';
-
       if (size === 'small') {
         vo.style.width = window.innerWidth <= 768 ? '200px' : '280px';
         vo.style.height = '';
@@ -975,7 +930,6 @@ socket.on('join-rejected', (data) => {
         vo.style.width = window.innerWidth <= 768 ? '320px' : '480px';
         vo.style.height = '';
       } else if (size === 'full') {
-        // ملء الشاشة الكاملة
         vo.style.width = '';
         vo.style.height = '';
         vo.style.top = '0';
@@ -1008,18 +962,15 @@ socket.on('join-rejected', (data) => {
       oy = e.clientY - vo.offsetTop;
       vo.style.cursor = 'grabbing';
     });
-
     document.addEventListener('mousemove', e => {
       if (!dragging) return;
       vo.style.left = (e.clientX - ox) + 'px';
       vo.style.top = (e.clientY - oy) + 'px';
       vo.style.bottom = 'auto';
     });
-
     document.addEventListener('mouseup', () => {
       if (dragging) { dragging = false; if (!vo.classList.contains('fullscreen-mode')) vo.style.cursor = 'grab'; }
     });
-
     vo.addEventListener('touchstart', e => {
       if (vo.classList.contains('fullscreen-mode')) return;
       if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
@@ -1028,7 +979,6 @@ socket.on('join-rejected', (data) => {
       ox = touch.clientX - vo.offsetLeft;
       oy = touch.clientY - vo.offsetTop;
     }, { passive: true });
-
     document.addEventListener('touchmove', e => {
       if (!dragging) return;
       const touch = e.touches[0];
@@ -1036,43 +986,34 @@ socket.on('join-rejected', (data) => {
       vo.style.top = (touch.clientY - oy) + 'px';
       vo.style.bottom = 'auto';
     }, { passive: true });
-
     document.addEventListener('touchend', () => { dragging = false; });
 
     // ===== Helpers =====
     function escapeHtml(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
     }
-
     function formatText(str) { return escapeHtml(str).replace(/\n/g,'<br>'); }
-
     function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-
     function autoResize(el) {
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, window.innerWidth <= 768 ? 100 : 120) + 'px';
       keepInputVisible();
     }
-
     function handleTyping() {
       if (!isTyping) { isTyping = true; socket.emit('typing', true); }
       clearTimeout(typingTimer);
       typingTimer = setTimeout(clearTyping, 1000);
     }
-
     function clearTyping() { isTyping = false; socket.emit('typing', false); clearTimeout(typingTimer); }
-
     function scrollDown(force = false) {
       const msgs = document.getElementById('messages');
       const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 150;
       if (force || nearBottom) requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
     }
-
     function keepInputVisible() {
       const inputArea = document.getElementById('input-area');
       setTimeout(() => inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' }), 30);
     }
-
     function toggleEmojiPicker() {
       const wrap = document.getElementById('emoji-picker-wrap');
       if (pickerOpen) { wrap.classList.remove('open'); pickerOpen = false; return; }
@@ -1095,7 +1036,6 @@ socket.on('join-rejected', (data) => {
       pickerOpen = true;
       keepInputVisible();
     }
-
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('emoji-picker-wrap');
       const btn = document.getElementById('emoji-btn');
@@ -1104,13 +1044,10 @@ socket.on('join-rejected', (data) => {
         pickerOpen = false;
       }
     });
-
     window.addEventListener('resize', () => { keepInputVisible(); scrollDown(); });
-
     document.getElementById('msg-input').addEventListener('focus', () => {
       setTimeout(() => { keepInputVisible(); scrollDown(true); }, 200);
     });
-
     window.addEventListener('beforeunload', () => {
       stopStreamRecordingAndDownload();
       if (streamPC) { try { streamPC.close(); } catch (e) {} }
