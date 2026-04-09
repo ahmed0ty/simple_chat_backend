@@ -542,11 +542,15 @@ socket.on('join-rejected', (data) => {
   alert(data.reason);
 });
 
-    socket.on('history', (history) => {
-  // السيرفر وافق → دلوقتي افتح الشات
+  socket.on('history', (history) => {
   document.getElementById('join-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === 'المالك' && myName === 'ahmedtony@#' ? myId : (msg.username === myName ? myId : 'other') }, false); });
+  setTimeout(() => scrollDown(true), 50);
+  if (!Array.isArray(history)) return;
+  history.forEach(msg => {
+    if (!msg.text) return;
+    appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false);
+  });
   scrollDown(true);
 });
     socket.on('message', (data) => appendMessage(data, true));
