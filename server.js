@@ -175,6 +175,10 @@
 
 
 
+
+
+
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -191,84 +195,28 @@ const io = new Server(server, {
 app.use(express.static(path.join(__dirname, "public")));
 
 const MESSAGES_FILE = path.join(__dirname, "messages.json");
-const MISSED_FILE = path.join(__dirname, "missed.json");
 
-if (!fs.existsSync(MESSAGES_FILE)) fs.writeFileSync(MESSAGES_FILE, "[]");
-if (!fs.existsSync(MISSED_FILE)) fs.writeFileSync(MISSED_FILE, "[]");
+if (!fs.existsSync(MESSAGES_FILE)) {
+  fs.writeFileSync(MESSAGES_FILE, "[]");
+}
 
 let messages = [];
 try {
   messages = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf8"));
   if (!Array.isArray(messages)) messages = [];
-} catch (err) { messages = []; }
-
-let missedMessages = [];
-try {
-  missedMessages = JSON.parse(fs.readFileSync(MISSED_FILE, "utf8"));
-  if (!Array.isArray(missedMessages)) missedMessages = [];
-} catch (err) { missedMessages = []; }
+} catch (err) {
+  messages = [];
+}
 
 const users = {};
 const OWNER_NAME = "ahmedtony@#";
 
 function isOwnerOnline() {
-  return Object.values(users).some(u => u === OWNER_NAME);
+  return Object.values(users).includes(OWNER_NAME);
 }
 
 function getRoomCount() {
   return Object.keys(users).length;
-}
-
-// ===== صفحة رسائل الغياب =====
-app.get("/missed", (req, res) => {
-  const msgs = missedMessages.slice(-100);
-  let rows = msgs.length === 0
-    ? `<div class="empty">لا توجد رسائل غياب</div>`
-    : msgs.map(m => `
-        <div class="msg-card">
-          <div class="meta"><span class="name">${escHtml(m.username)}</span><span class="time">${escHtml(m.time)}</span></div>
-          <div class="text">${escHtml(m.text)}</div>
-        </div>`).join('');
-
-  res.send(`<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>رسائل الغياب</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Cairo',sans-serif;background:#0d0f14;color:#e8eaf2;min-height:100vh;padding:24px 16px}
-h1{font-size:22px;font-weight:900;margin-bottom:6px;background:linear-gradient(135deg,#4f8ef7,#7c5cfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{font-size:13px;color:#6b7394;margin-bottom:24px}
-.msg-card{background:#161920;border:1px solid #252a3a;border-radius:16px;padding:16px 20px;margin-bottom:12px}
-.meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.name{font-weight:700;font-size:14px;color:#4f8ef7}
-.time{font-size:12px;color:#6b7394}
-.text{font-size:15px;line-height:1.6;word-break:break-word}
-.empty{text-align:center;color:#6b7394;padding:60px 0;font-size:15px}
-.clear-btn{display:inline-block;margin-bottom:20px;padding:10px 24px;background:rgba(239,68,68,.15);border:1px solid #ef4444;border-radius:12px;color:#ef4444;font-family:'Cairo',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none}
-.clear-btn:hover{background:rgba(239,68,68,.3)}
-</style>
-</head>
-<body>
-<h1>📬 رسائل الغياب</h1>
-<p class="sub">الرسائل اللي اتبعتت وانت مش موجود (آخر 100 رسالة)</p>
-<a class="clear-btn" href="/missed/clear">🗑️ مسح الكل</a>
-${rows}
-</body>
-</html>`);
-});
-
-app.get("/missed/clear", (req, res) => {
-  missedMessages = [];
-  saveMissed();
-  res.redirect("/missed");
-});
-
-function escHtml(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 io.on("connection", (socket) => {
@@ -280,16 +228,18 @@ io.on("connection", (socket) => {
   socket.on("join", (username) => {
     const name = (username || "").trim();
 
-    // الغرفة ممتلئة (أكثر من 2)
     if (getRoomCount() >= 2) {
       socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
       socket.disconnect(true);
       return;
     }
 
-    // لو مفيش مالك ومش هو المالك → ارفض
+    users[socket.id] = name;
+    socket.username = name;
+
     if (!isOwnerOnline() && name !== OWNER_NAME) {
       socket.emit("join-rejected", { reason: "مش مسموح بالدخول بدون المالك." });
+      delete users[socket.id];
       socket.disconnect(true);
       return;
     }
@@ -299,7 +249,7 @@ io.on("connection", (socket) => {
 
     const displayName = name === OWNER_NAME ? "المالك" : name;
 
-    socket.emit("history", messages.filter(m => m.type !== "voice"));
+    socket.emit("history", messages.filter((m) => m.type !== "voice"));
     io.emit("system", { text: `${displayName} انضم إلى المحادثة`, time: getTime() });
     emitUsers();
   });
@@ -309,17 +259,10 @@ io.on("connection", (socket) => {
     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
     const text = typeof data?.text === "string" ? data.text.trim() : "";
     if (!text) return;
-
     const msgData = { id: socket.id, username: displayName, text, time: getTime(), type: "text" };
     messages.push(msgData);
     io.emit("message", msgData);
     saveMessages();
-
-    // لو المالك مش موجود، احفظ الرسالة في الغياب
-    if (!isOwnerOnline()) {
-      missedMessages.push({ username: displayName, text, time: getTime() });
-      saveMissed();
-    }
   });
 
   socket.on("voice", (data) => {
@@ -346,10 +289,9 @@ io.on("connection", (socket) => {
     });
   });
 
-  // ===== البث المباشر - فقط للشخص الثاني =====
+  // ===== البث المباشر =====
   socket.on("stream-offer", (data) => {
     if (!users[socket.id]) return;
-    // أرسل فقط للشخص الآخر (مش broadcast عام)
     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
   });
 
@@ -361,7 +303,7 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
   });
 
-  // ===== المكالمة الصوتية - فقط للشخص الثاني =====
+  // ===== المكالمة الصوتية =====
   socket.on("call-offer", (data) => {
     if (!users[socket.id]) return;
     const rawName = users[socket.id];
@@ -396,10 +338,10 @@ io.on("connection", (socket) => {
   socket.on("owner-logout", () => {
     if (users[socket.id] !== OWNER_NAME) return;
     io.emit("force-logout", { reason: "المالك أنهى المحادثة." });
-    setTimeout(() => { io.disconnectSockets(true); }, 1000);
+    setTimeout(() => {
+      io.disconnectSockets(true);
+    }, 1000);
   });
-
-  socket.on("pong", () => {});
 
   socket.on("disconnect", () => {
     clearInterval(keepAlive);
@@ -422,12 +364,9 @@ function emitUsers() {
 
 function saveMessages() {
   if (messages.length > 500) messages = messages.slice(-500);
-  fs.writeFile(MESSAGES_FILE, JSON.stringify(messages), err => { if (err) console.error(err); });
-}
-
-function saveMissed() {
-  if (missedMessages.length > 200) missedMessages = missedMessages.slice(-200);
-  fs.writeFile(MISSED_FILE, JSON.stringify(missedMessages), err => { if (err) console.error(err); });
+  fs.writeFile(MESSAGES_FILE, JSON.stringify(messages), (err) => {
+    if (err) console.error("Error saving messages:", err);
+  });
 }
 
 function getTime() {

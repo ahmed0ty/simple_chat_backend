@@ -392,6 +392,14 @@
     <img id="fullscreen-img" src="" alt="" />
   </div>
 
+  <!-- رنة المكالمة -->
+  <audio id="ringtone" loop>
+    <source src="https://www.soundjay.com/phone/sounds/phone-calling-1.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="busy-tone">
+    <source src="https://www.soundjay.com/phone/sounds/phone-busy-1.mp3" type="audio/mpeg">
+  </audio>
+
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io({ transports: ["websocket", "polling"] });
@@ -400,88 +408,19 @@
     let typingTimer = null, isTyping = false;
     let pickerInstance = null, pickerOpen = false;
     let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
+    let streamPC = null, localStreamObj = null, localStreamStarted = false;
+    let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
     let insideChat = false;
 
-    // ===== بث مباشر - متغير واحد فقط =====
-    let localStreamObj = null;
-    let localStreamStarted = false;
-    let streamPC = null;
-    let viewerPC = null;   // <-- منفصل تماماً عن streamPC
-
-    // ===== تسجيل البث =====
-    let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
-
-    // ===== المكالمة =====
-    let callPC = null, callStream = null, callTimer = null, callSeconds = 0;
-    let isMuted = false, isSpeaker = false, callAudioEl = null, inCall = false;
-
-    // ===== Web Audio للرنة =====
-    let audioCtx = null;
-    let ringtoneHandle = null;
-
-    function getAudioCtx() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      return audioCtx;
-    }
-
-    function playRingtone(loop) {
-      stopRingtone();
-      const ctx = getAudioCtx();
-      if (ctx.state === 'suspended') ctx.resume();
-
-      let stopped = false;
-      ringtoneHandle = { stopped: false, timeout: null };
-
-      function ringOnce() {
-        if (ringtoneHandle && ringtoneHandle.stopped) return;
-        const g = ctx.createGain();
-        g.connect(ctx.destination);
-        [440, 480].forEach(freq => {
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          osc.connect(g);
-          osc.start(ctx.currentTime);
-          osc.stop(ctx.currentTime + 2);
-        });
-        g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(0.4, ctx.currentTime + 0.05);
-        g.gain.setValueAtTime(0.4, ctx.currentTime + 1.8);
-        g.gain.linearRampToValueAtTime(0, ctx.currentTime + 2);
-        if (loop && ringtoneHandle && !ringtoneHandle.stopped) {
-          ringtoneHandle.timeout = setTimeout(ringOnce, 4000);
-        }
-      }
-      ringOnce();
-    }
-
-    function stopRingtone() {
-      if (ringtoneHandle) {
-        ringtoneHandle.stopped = true;
-        clearTimeout(ringtoneHandle.timeout);
-        ringtoneHandle = null;
-      }
-    }
-
-    function playBusyTone() {
-      const ctx = getAudioCtx();
-      if (ctx.state === 'suspended') ctx.resume();
-      let t = ctx.currentTime;
-      for (let i = 0; i < 6; i++) {
-        const g = ctx.createGain();
-        g.connect(ctx.destination);
-        [480, 620].forEach(freq => {
-          const osc = ctx.createOscillator();
-          osc.type = 'sine';
-          osc.frequency.value = freq;
-          osc.connect(g);
-          osc.start(t + i * 1);
-          osc.stop(t + i * 1 + 0.5);
-        });
-        g.gain.setValueAtTime(0.3, t + i * 1);
-        g.gain.setValueAtTime(0, t + i * 1 + 0.5);
-      }
-    }
+    // ===== متغيرات المكالمة =====
+    let callPC = null;
+    let callStream = null;
+    let callTimer = null;
+    let callSeconds = 0;
+    let isMuted = false;
+    let isSpeaker = false;
+    let callAudioEl = null;
+    let inCall = false;
 
     const iceServers = {
       iceServers: [
@@ -543,6 +482,7 @@
         el.innerHTML = `<div class="user-dot"></div><span>${escapeHtml(name)}</span>`;
         list.appendChild(el);
       });
+      // تفعيل/تعطيل زر الاتصال
       document.getElementById('call-btn').disabled = users.length < 2;
     });
     socket.on('typing', ({ username, isTyping }) => {
@@ -567,7 +507,7 @@
       document.getElementById('viewer-video').srcObject = null;
       if (localStreamObj) localStreamObj.getTracks().forEach(t => t.stop());
       if (streamPC) { try { streamPC.close(); } catch(e){} }
-      if (viewerPC) { try { viewerPC.close(); } catch(e){} viewerPC = null; }
+      if (window._viewerPC) { try { window._viewerPC.close(); } catch(e){} window._viewerPC = null; }
       localStreamStarted = false; localStreamObj = null; streamPC = null;
       stopStreamRecordingAndDownload();
       endCall();
@@ -706,36 +646,25 @@
       audio.play(); audio.onended = () => { btn.textContent = '▶'; }; audio.onpause = () => { btn.textContent = '▶'; };
     }
 
-    // ===== البث المباشر - واحد فقط =====
+    // ===== البث المباشر =====
     async function startLocalStreamOnce() {
-      if (localStreamStarted && localStreamObj) return;
+      if (localStreamStarted && localStreamObj && streamPC) return;
       try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
       localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      streamPC = new RTCPeerConnection(iceServers);
+      streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
+      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+      streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+      const offer = await streamPC.createOffer();
+      await streamPC.setLocalDescription(offer);
+      socket.emit('stream-offer', { offer });
       localStreamStarted = true;
-
-      // لو مفيش streamPC ابدأ بث
-      if (!streamPC) {
-        streamPC = new RTCPeerConnection(iceServers);
-        streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
-        localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
-        streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-        const offer = await streamPC.createOffer();
-        await streamPC.setLocalDescription(offer);
-        socket.emit('stream-offer', { offer });
-      }
     }
 
-    // استقبال البث - يُعرض فقط على الشخص الثاني
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
-      // لو أنا اللي بعت البث، تجاهل
-      if (streamPC && streamPC.localDescription) return;
-
-      // لو عندي viewerPC قديم، أغلقه
-      if (viewerPC) { try { viewerPC.close(); } catch(e){} viewerPC = null; }
-
-      viewerPC = new RTCPeerConnection(iceServers);
-      viewerPC.ontrack = (e) => {
+      const pc = new RTCPeerConnection(iceServers);
+      pc.ontrack = (e) => {
         if (!e.streams || !e.streams[0]) return;
         const video = document.getElementById('viewer-video');
         const stream = e.streams[0];
@@ -751,37 +680,27 @@
         };
         if (stream.active) tryPlay(); else { stream.addEventListener('active', tryPlay, { once: true }); setTimeout(tryPlay, 500); }
       };
-      viewerPC.oniceconnectionstatechange = () => {
-        if (viewerPC && viewerPC.iceConnectionState === 'disconnected') {
-          setTimeout(() => { if (viewerPC && viewerPC.iceConnectionState === 'disconnected') viewerPC.restartIce(); }, 3000);
-        }
-      };
-      viewerPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-      await viewerPC.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await viewerPC.createAnswer();
-      await viewerPC.setLocalDescription(answer);
+      pc.oniceconnectionstatechange = () => { if (pc.iceConnectionState === 'disconnected') setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000); };
+      pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
       socket.emit('stream-answer', { answer });
-
+      window._viewerPC = pc;
       document.getElementById('viewer-overlay').classList.add('active');
       setViewerSize('small');
     });
-
-    socket.on('stream-answer', async ({ answer }) => {
-      if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
+    socket.on('stream-answer', async ({ answer }) => { if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer)); });
     socket.on('stream-ice', async ({ candidate }) => {
-      // خد الـ candidate للـ PC الصح
-      const pc = streamPC && streamPC.localDescription ? streamPC : viewerPC;
+      const pc = streamPC || window._viewerPC;
       try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
     });
-
     socket.on('stream-end', () => {
       stopStreamRecordingAndDownload();
       document.getElementById('viewer-video').srcObject = null;
       document.getElementById('viewer-overlay').classList.remove('active');
       document.getElementById('viewer-overlay').classList.remove('fullscreen-mode');
-      if (viewerPC) { viewerPC.close(); viewerPC = null; }
+      if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     });
 
     // ===== تسجيل البث =====
@@ -828,20 +747,23 @@
     async function startCall() {
       if (inCall) return;
       try {
+        // نستخدم ميكروفون مستقل عن البث
         callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         callPC = new RTCPeerConnection(iceServers);
         callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
+
         callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
         callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
         callPC.onconnectionstatechange = () => {
           if (callPC.connectionState === 'connected') showActiveCall();
           if (callPC.connectionState === 'failed') endCall();
         };
+
         const offer = await callPC.createOffer();
         await callPC.setLocalDescription(offer);
         socket.emit('call-offer', { offer });
+
         showCallUI('calling');
-        // رنة للمتصِل (بدون loop - رنة واحدة بس)
         playRingtone(false);
       } catch(err) { alert('تأكد من إذن الميكروفون!'); }
     }
@@ -849,8 +771,9 @@
     socket.on('call-offer', async ({ offer, callerName }) => {
       if (inCall) { socket.emit('call-reject'); return; }
       showCallUI('incoming', callerName);
-      // رنة للمستقبِل (loop = true عشان يستمر لحد ما يرد)
       playRingtone(true);
+
+      // نحفظ الـ offer عشان نستخدمه لما يقبل
       window._pendingCallOffer = offer;
     });
 
@@ -860,12 +783,14 @@
         callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         callPC = new RTCPeerConnection(iceServers);
         callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
+
         callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
         callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
         callPC.onconnectionstatechange = () => {
           if (callPC.connectionState === 'connected') showActiveCall();
           if (callPC.connectionState === 'failed') endCall();
         };
+
         await callPC.setRemoteDescription(new RTCSessionDescription(window._pendingCallOffer));
         const answer = await callPC.createAnswer();
         await callPC.setLocalDescription(answer);
@@ -881,7 +806,10 @@
     }
 
     socket.on('call-answer', async ({ answer }) => {
-      if (callPC) { await callPC.setRemoteDescription(new RTCSessionDescription(answer)); inCall = true; }
+      if (callPC) {
+        await callPC.setRemoteDescription(new RTCSessionDescription(answer));
+        inCall = true;
+      }
     });
 
     socket.on('call-ice', async ({ candidate }) => {
@@ -932,14 +860,16 @@
       const active = document.getElementById('call-actions-active');
       const status = document.getElementById('call-status');
       const nameEl = document.getElementById('call-name');
+
       overlay.classList.add('active');
       document.getElementById('call-timer-display').style.display = 'none';
+
       if (mode === 'incoming') {
         nameEl.textContent = callerName || 'مكالمة واردة';
         status.textContent = 'يتصل بك...';
         incoming.style.display = 'flex';
         active.style.display = 'none';
-      } else {
+      } else if (mode === 'calling') {
         nameEl.textContent = 'جاري الاتصال...';
         status.textContent = 'ينتظر الرد...';
         incoming.style.display = 'none';
@@ -955,7 +885,10 @@
       timerEl.style.display = 'block';
       callSeconds = 0;
       clearInterval(callTimer);
-      callTimer = setInterval(() => { callSeconds++; timerEl.textContent = formatDuration(callSeconds); }, 1000);
+      callTimer = setInterval(() => {
+        callSeconds++;
+        timerEl.textContent = formatDuration(callSeconds);
+      }, 1000);
     }
 
     function hideCallUI() {
@@ -980,6 +913,20 @@
       document.getElementById('speaker-btn').classList.toggle('active', isSpeaker);
     }
 
+    // ===== رنة =====
+    function playRingtone(loop) {
+      try {
+        const rt = document.getElementById('ringtone');
+        rt.loop = loop; rt.currentTime = 0; rt.play().catch(()=>{});
+      } catch(e){}
+    }
+    function stopRingtone() {
+      try { const rt = document.getElementById('ringtone'); rt.pause(); rt.currentTime = 0; } catch(e){}
+    }
+    function playBusyTone() {
+      try { const bt = document.getElementById('busy-tone'); bt.currentTime = 0; bt.play().catch(()=>{}); } catch(e){}
+    }
+
     // ===== حجم المشاهد =====
     function setViewerSize(size) {
       const vo = document.getElementById('viewer-overlay');
@@ -993,7 +940,7 @@
       document.getElementById('viewer-video').srcObject = null;
       const vo = document.getElementById('viewer-overlay');
       vo.classList.remove('active'); vo.classList.remove('fullscreen-mode');
-      if (viewerPC) { viewerPC.close(); viewerPC = null; }
+      if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     }
 
     // ===== سحب المشاهد =====
