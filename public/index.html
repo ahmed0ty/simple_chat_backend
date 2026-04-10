@@ -11,7 +11,7 @@
     :root {
       --bg: #0d0f14; --surface: #161920; --surface2: #1e2230;
       --border: #252a3a; --accent: #4f8ef7; --accent2: #7c5cfa;
-      --green: #22d98a; --text: #e8eaf2; --muted: #6b7394;
+      --green: #22d98a; --red: #ef4444; --text: #e8eaf2; --muted: #6b7394;
       --bubble-me: linear-gradient(135deg, #4f8ef7, #7c5cfa);
       --bubble-other: #1e2230;
     }
@@ -30,7 +30,7 @@
       background-size: 40px 40px; pointer-events: none;
     }
 
-    /* JOIN */
+    /* ===== JOIN ===== */
     #join-screen {
       position: fixed; inset: 0; background: var(--bg); display: flex;
       flex-direction: column; align-items: center; justify-content: center;
@@ -64,9 +64,8 @@
       cursor: pointer; transition: opacity .2s, transform .15s;
     }
     .join-btn:hover { opacity: .9; transform: translateY(-1px); }
-    .join-btn:active { transform: translateY(0); }
 
-    /* APP */
+    /* ===== APP ===== */
     #app {
       display: none; width: 100%; max-width: 820px; height: 96dvh;
       flex-direction: row; border-radius: 24px; overflow: hidden;
@@ -89,16 +88,12 @@
     }
     .user-item {
       display: flex; align-items: center; gap: 10px; padding: 10px;
-      border-radius: 12px; font-size: 14px; font-weight: 600;
-      transition: background .15s; animation: slideIn .3s ease;
+      border-radius: 12px; font-size: 14px; font-weight: 600; transition: background .15s;
     }
     .user-item:hover { background: var(--surface2); }
-    .user-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--green);
-      flex-shrink: 0; box-shadow: 0 0 6px var(--green);
-    }
+    .user-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 6px var(--green); }
 
-    /* CHAT MAIN */
+    /* ===== CHAT MAIN ===== */
     #chat-main {
       flex: 1; display: flex; flex-direction: column; background: var(--bg);
       min-width: 0; min-height: 0; overflow: hidden; position: relative;
@@ -109,19 +104,25 @@
       display: flex; align-items: center; gap: 12px; min-height: 72px; flex-shrink: 0;
     }
     .header-icon { font-size: 28px; flex-shrink: 0; }
-    #chat-header h2 {
-      font-size: 18px; font-weight: 900;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    #chat-header h2 { font-size: 18px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     #chat-header span { font-size: 12px; color: var(--green); margin-right: auto; }
+    #call-btn {
+      width: 38px; height: 38px; border-radius: 12px; border: none;
+      background: rgba(34,217,138,.15); color: var(--green);
+      font-size: 18px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: all .2s; flex-shrink: 0;
+    }
+    #call-btn:hover { background: rgba(34,217,138,.3); }
+    #call-btn:disabled { opacity: .4; cursor: not-allowed; }
     #owner-logout-btn {
-      display: none; margin-right: 8px; padding: 6px 14px;
-      background: rgba(239,68,68,.15); border: 1px solid #ef4444;
-      border-radius: 10px; color: #ef4444;
+      display: none; padding: 6px 14px;
+      background: rgba(239,68,68,.15); border: 1px solid var(--red);
+      border-radius: 10px; color: var(--red);
       font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
       cursor: pointer; flex-shrink: 0; transition: background .2s;
     }
     #owner-logout-btn:hover { background: rgba(239,68,68,.3); }
+
     #messages {
       flex: 1; overflow-y: auto; padding: 20px 20px 10px;
       display: flex; flex-direction: column; gap: 10px;
@@ -133,10 +134,7 @@
     .msg.me { align-self: flex-end; align-items: flex-end; }
     .msg.other { align-self: flex-start; align-items: flex-start; }
     .msg-username { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 4px; padding: 0 6px; }
-    .msg-bubble {
-      padding: 12px 16px; border-radius: 18px; font-size: 15px;
-      line-height: 1.5; word-break: break-word; overflow-wrap: anywhere;
-    }
+    .msg-bubble { padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; word-break: break-word; overflow-wrap: anywhere; }
     .msg.me .msg-bubble { background: var(--bubble-me); border-bottom-left-radius: 4px; color: #fff; }
     .msg.other .msg-bubble { background: var(--bubble-other); border: 1px solid var(--border); border-bottom-right-radius: 4px; }
     .msg-time { font-size: 10px; color: var(--muted); margin-top: 4px; padding: 0 6px; }
@@ -145,22 +143,11 @@
       padding: 6px 16px; background: rgba(255,255,255,.03);
       border-radius: 20px; align-self: center; animation: fadeIn .3s; max-width: 95%;
     }
+    .msg-media-img { max-width: 240px; max-height: 240px; border-radius: 14px; cursor: pointer; display: block; object-fit: cover; }
+    .msg-media-video { max-width: 240px; max-height: 200px; border-radius: 14px; display: block; background: #000; }
 
-    .msg-media-wrap { max-width: 100%; }
-    .msg-media-img {
-      max-width: 240px; max-height: 240px; border-radius: 14px;
-      cursor: pointer; display: block; object-fit: cover; transition: opacity .2s;
-    }
-    .msg-media-img:hover { opacity: .85; }
-    .msg-media-video {
-      max-width: 240px; max-height: 200px; border-radius: 14px;
-      display: block; background: #000; outline: none;
-    }
+    #typing-indicator { min-height: 24px; padding: 0 20px 8px; font-size: 13px; color: var(--muted); font-style: italic; flex-shrink: 0; }
 
-    #typing-indicator {
-      min-height: 24px; padding: 0 20px 8px; font-size: 13px;
-      color: var(--muted); font-style: italic; flex-shrink: 0;
-    }
     #input-area {
       padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
       background: var(--surface); border-top: 1px solid var(--border);
@@ -171,8 +158,7 @@
       flex: 1; min-width: 0; padding: 12px 18px; background: var(--surface2);
       border: 1px solid var(--border); border-radius: 16px; color: var(--text);
       font-family: 'Cairo', sans-serif; font-size: 15px; text-align: right;
-      outline: none; resize: none; max-height: 120px;
-      transition: border-color .2s; line-height: 1.5; overflow-y: auto;
+      outline: none; resize: none; max-height: 120px; transition: border-color .2s; line-height: 1.5; overflow-y: auto;
     }
     #msg-input:focus { border-color: var(--accent); }
     #msg-input::placeholder { color: var(--muted); }
@@ -180,134 +166,105 @@
       width: 46px; height: 46px; flex-shrink: 0;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       border: none; border-radius: 14px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity .2s, transform .15s;
+      display: flex; align-items: center; justify-content: center; transition: opacity .2s, transform .15s;
     }
     #send-btn:hover { opacity: .9; transform: scale(1.05); }
-    #send-btn:active { transform: scale(.97); }
     #send-btn svg { width: 20px; height: 20px; fill: #fff; }
     #emoji-btn, #voice-btn, #media-btn {
       width: 46px; height: 46px; flex-shrink: 0;
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 14px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; transition: all .2s;
+      border-radius: 14px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; font-size: 22px; transition: all .2s;
     }
-    #emoji-btn:hover, #voice-btn:hover, #media-btn:hover {
-      border-color: var(--accent); background: var(--surface);
-    }
-    #voice-btn.recording {
-      background: rgba(239,68,68,.15); border-color: #ef4444;
-      animation: pulse-red 1s infinite;
-    }
+    #emoji-btn:hover, #voice-btn:hover, #media-btn:hover { border-color: var(--accent); background: var(--surface); }
+    #voice-btn.recording { background: rgba(239,68,68,.15); border-color: var(--red); animation: pulse-red 1s infinite; }
     #emoji-picker-wrap {
       position: absolute; bottom: 76px; left: 16px; z-index: 999;
       display: none; border-radius: 16px; overflow: hidden;
       box-shadow: 0 12px 40px rgba(0,0,0,.5); max-width: calc(100vw - 24px);
     }
     #emoji-picker-wrap.open { display: block; }
-    em-emoji-picker {
-      --rgb-background: 22, 25, 32; --rgb-input: 30, 34, 48;
-      --rgb-color: 232, 234, 242; --rgb-accent: 79, 142, 247;
-      --border-radius: 0; height: 380px; width: 340px; max-width: 100%;
-    }
+    em-emoji-picker { --rgb-background: 22, 25, 32; --rgb-input: 30, 34, 48; --rgb-color: 232, 234, 242; --rgb-accent: 79, 142, 247; --border-radius: 0; height: 380px; width: 340px; max-width: 100%; }
 
-    .voice-bubble {
-      display: flex; align-items: center; gap: 10px; padding: 10px 14px; width: 100%;
-    }
-    .voice-play-btn {
-      width: 34px; height: 34px; border-radius: 50%; border: none;
-      background: rgba(255,255,255,.2); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; flex-shrink: 0; transition: background .2s;
-    }
+    /* ===== صوت رنين ===== */
+    .voice-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; width: 100%; }
+    .voice-play-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255,255,255,.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: background .2s; }
     .msg.other .voice-play-btn { background: rgba(79,142,247,.2); }
-    .voice-play-btn:hover { background: rgba(255,255,255,.35); }
-    .voice-waveform {
-      flex: 1; min-width: 50px; height: 28px;
-      display: flex; align-items: center; gap: 2px; overflow: hidden;
-    }
+    .voice-waveform { flex: 1; min-width: 50px; height: 28px; display: flex; align-items: center; gap: 2px; overflow: hidden; }
     .voice-waveform span { display: inline-block; width: 3px; border-radius: 2px; background: rgba(255,255,255,.6); }
     .msg.other .voice-waveform span { background: var(--accent); opacity: .7; }
     .voice-duration { font-size: 11px; opacity: .7; white-space: nowrap; flex-shrink: 0; }
-    #rec-timer {
-      display: none; align-items: center; gap: 8px;
-      font-size: 13px; color: #ef4444; font-weight: 700; flex-shrink: 0;
-    }
+    #rec-timer { display: none; align-items: center; gap: 8px; font-size: 13px; color: var(--red); font-weight: 700; flex-shrink: 0; }
     #rec-timer.show { display: flex; }
-    .rec-dot {
-      width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
-      animation: pulse-red 1s infinite;
-    }
+    .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; }
 
+    /* ===== CALL UI ===== */
+    #call-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(13,15,20,.96); backdrop-filter: blur(12px);
+      flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+      animation: fadeIn .3s ease;
+    }
+    #call-overlay.active { display: flex; }
+    .call-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px; box-shadow: 0 0 0 12px rgba(79,142,247,.15), 0 0 0 24px rgba(79,142,247,.07);
+      animation: call-pulse 2s infinite;
+    }
+    @keyframes call-pulse {
+      0%, 100% { box-shadow: 0 0 0 12px rgba(79,142,247,.15), 0 0 0 24px rgba(79,142,247,.07); }
+      50% { box-shadow: 0 0 0 18px rgba(79,142,247,.1), 0 0 0 36px rgba(79,142,247,.04); }
+    }
+    .call-name { font-size: 24px; font-weight: 900; color: var(--text); }
+    .call-status { font-size: 15px; color: var(--muted); }
+    #call-timer-display { font-size: 22px; font-weight: 700; color: var(--green); display: none; }
+    .call-actions { display: flex; gap: 24px; align-items: center; margin-top: 8px; }
+    .call-action-btn {
+      width: 64px; height: 64px; border-radius: 50%; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; cursor: pointer; transition: all .2s;
+    }
+    .call-action-btn.accept { background: var(--green); box-shadow: 0 8px 24px rgba(34,217,138,.4); }
+    .call-action-btn.accept:hover { transform: scale(1.1); }
+    .call-action-btn.reject { background: var(--red); box-shadow: 0 8px 24px rgba(239,68,68,.4); }
+    .call-action-btn.reject:hover { transform: scale(1.1); }
+    .call-action-btn.mute { background: var(--surface2); border: 1px solid var(--border); }
+    .call-action-btn.mute.active { background: rgba(239,68,68,.2); border-color: var(--red); }
+    .call-action-btn.speaker { background: var(--surface2); border: 1px solid var(--border); }
+    .call-action-btn.speaker.active { background: rgba(79,142,247,.2); border-color: var(--accent); }
+
+    /* ===== VIEWER ===== */
     #viewer-overlay {
       display: none; position: fixed; bottom: 20px; left: 20px; width: 280px;
       border-radius: 20px; z-index: 9999; flex-direction: column; align-items: stretch;
       background: rgba(13,15,20,.92); border: 1.5px solid var(--green);
-      box-shadow: 0 8px 40px rgba(0,0,0,.7), 0 0 0 1px rgba(34,217,138,.15);
-      cursor: grab; touch-action: none; overflow: hidden; user-select: none;
-      transition: width .25s, height .25s, border-radius .25s;
+      box-shadow: 0 8px 40px rgba(0,0,0,.7); cursor: grab; touch-action: none; overflow: hidden; user-select: none;
     }
     #viewer-overlay.active { display: flex; }
-    #viewer-overlay.fullscreen-mode {
-      width: 100vw !important; height: 100dvh !important;
-      top: 0 !important; left: 0 !important;
-      bottom: auto !important; right: auto !important;
-      border-radius: 0 !important; cursor: default;
-    }
-    #viewer-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; background: rgba(34,217,138,.08);
-      border-bottom: 1px solid rgba(34,217,138,.15); flex-shrink: 0; cursor: grab;
-    }
+    #viewer-overlay.fullscreen-mode { width: 100vw !important; height: 100dvh !important; top: 0 !important; left: 0 !important; bottom: auto !important; border-radius: 0 !important; cursor: default; }
+    #viewer-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(34,217,138,.08); border-bottom: 1px solid rgba(34,217,138,.15); flex-shrink: 0; cursor: grab; }
     #viewer-overlay.fullscreen-mode #viewer-header { cursor: default; }
-    #viewer-label {
-      font-size: 13px; font-weight: 700; color: var(--green);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .live-dot {
-      width: 7px; height: 7px; border-radius: 50%; background: #ef4444;
-      animation: pulse-red 1s infinite; flex-shrink: 0;
-    }
+    #viewer-label { font-size: 13px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 6px; }
+    .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; flex-shrink: 0; }
     .viewer-controls { display: flex; align-items: center; gap: 6px; }
-    .viewer-ctrl-btn {
-      width: 28px; height: 28px; border-radius: 8px;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-      color: var(--text); cursor: pointer; font-size: 14px;
-      display: flex; align-items: center; justify-content: center;
-      transition: background .15s; flex-shrink: 0;
-    }
+    .viewer-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .viewer-ctrl-btn:hover { background: rgba(255,255,255,.16); }
-    .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: #ef4444; color: #ef4444; }
-    #viewer-video {
-      width: 100%; display: block; background: #000;
-      aspect-ratio: 4/3; object-fit: cover; flex-shrink: 0;
-    }
-    #viewer-overlay.fullscreen-mode #viewer-video {
-      height: calc(100dvh - 44px); aspect-ratio: unset; object-fit: contain;
-    }
-    #rec-stream-indicator {
-      display: none; align-items: center; gap: 6px;
-      padding: 4px 12px; font-size: 11px; color: #ef4444; font-weight: 700;
-      background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0;
-    }
+    .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: var(--red); color: var(--red); }
+    #viewer-video { width: 100%; display: block; background: #000; aspect-ratio: 4/3; object-fit: cover; flex-shrink: 0; }
+    #viewer-overlay.fullscreen-mode #viewer-video { height: calc(100dvh - 44px); aspect-ratio: unset; object-fit: contain; }
+    #rec-stream-indicator { display: none; align-items: center; gap: 6px; padding: 4px 12px; font-size: 11px; color: var(--red); font-weight: 700; background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0; }
     #rec-stream-indicator.show { display: flex; }
 
-    #fullscreen-overlay {
-      display: none; position: fixed; inset: 0; z-index: 99999;
-      background: #000; align-items: center; justify-content: center; flex-direction: column;
-    }
+    /* ===== FULLSCREEN IMG ===== */
+    #fullscreen-overlay { display: none; position: fixed; inset: 0; z-index: 99999; background: #000; align-items: center; justify-content: center; }
     #fullscreen-overlay.active { display: flex; }
     #fullscreen-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
-    #fullscreen-close {
-      position: absolute; top: 16px; left: 16px;
-      background: rgba(255,255,255,.12); border: none; border-radius: 10px;
-      color: #fff; font-size: 22px; width: 40px; height: 40px;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-    }
+    #fullscreen-close { position: absolute; top: 16px; left: 16px; background: rgba(255,255,255,.12); border: none; border-radius: 10px; color: #fff; font-size: 22px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
+    /* ===== ANIMATIONS ===== */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: none; } }
     @keyframes msgPop { from { opacity: 0; transform: scale(.96) translateY(4px); } to { opacity: 1; transform: none; } }
     @keyframes pulse-red {
       0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
@@ -317,55 +274,30 @@
     #messages::-webkit-scrollbar-track { background: transparent; }
     #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-    @media (max-width: 992px) {
-      #app { max-width: 100%; height: 100dvh; border-radius: 0; }
-      #sidebar { width: 190px; }
-    }
     @media (max-width: 768px) {
       body { align-items: stretch; justify-content: stretch; }
       #app { width: 100%; height: 100dvh; border-radius: 0; flex-direction: column; border: none; box-shadow: none; }
       #sidebar { display: none; }
       #chat-main { height: 100%; }
-      #chat-header { padding: 12px 14px; min-height: 60px; gap: 10px; }
+      #chat-header { padding: 12px 14px; min-height: 60px; }
       .header-icon { font-size: 22px; }
       #chat-header h2 { font-size: 15px; }
-      #chat-header span { font-size: 11px; }
-      #owner-logout-btn { font-size: 12px; padding: 5px 10px; }
       #messages { padding: 12px 12px 8px; gap: 8px; }
       .msg { max-width: 88%; }
-      .msg-bubble { font-size: 14px; padding: 10px 14px; border-radius: 16px; }
-      .msg-time { font-size: 10px; }
-      #typing-indicator { min-height: 20px; padding: 0 12px 6px; font-size: 12px; }
+      .msg-bubble { font-size: 14px; padding: 10px 14px; }
       #input-area { padding: 10px 10px calc(10px + env(safe-area-inset-bottom)); gap: 6px; }
-      #msg-input { font-size: 14px; padding: 10px 14px; border-radius: 14px; max-height: 100px; }
+      #msg-input { font-size: 14px; padding: 10px 14px; }
       #send-btn, #emoji-btn, #voice-btn, #media-btn { width: 42px; height: 42px; border-radius: 12px; }
-      #emoji-btn, #media-btn { font-size: 20px; }
-      #voice-btn { font-size: 18px; }
-      #send-btn svg { width: 18px; height: 18px; }
-      #emoji-picker-wrap { left: 8px; right: 8px; bottom: 68px; margin: auto; max-width: unset; }
+      #emoji-picker-wrap { left: 8px; right: 8px; bottom: 68px; }
       em-emoji-picker { width: 100% !important; height: 300px; }
       #viewer-overlay { width: 200px; left: 10px; bottom: 10px; }
-      .join-card { width: 100%; max-width: 380px; padding: 30px 20px; border-radius: 20px; }
-      .join-card .logo { font-size: 44px; }
-      .join-card h1 { font-size: 22px; }
-      .join-card p { font-size: 13px; margin-bottom: 22px; }
-      .join-input, .join-btn { font-size: 14px; padding: 12px 14px; }
-    }
-    @media (max-width: 420px) {
-      #chat-header { padding: 10px 12px; }
-      #chat-header h2 { font-size: 14px; }
-      .msg { max-width: 92%; }
-      .msg-bubble { font-size: 13.5px; padding: 9px 12px; }
-      #send-btn, #emoji-btn, #voice-btn, #media-btn { width: 40px; height: 40px; }
-      #msg-input { font-size: 13.5px; }
-      .voice-bubble { gap: 8px; padding: 8px 10px; }
-      .voice-play-btn { width: 30px; height: 30px; }
+      .join-card { width: 100%; padding: 30px 20px; border-radius: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- JOIN SCREEN -->
+  <!-- JOIN -->
   <div id="join-screen">
     <div class="join-card">
       <div class="logo">💬</div>
@@ -391,49 +323,58 @@
         <span class="header-icon">💬</span>
         <h2>غرفة المحادثة</h2>
         <span id="status-dot">● متصل</span>
-        <button id="owner-logout-btn" onclick="ownerLogout()">🚪 إنهاء المحادثة</button>
+        <button id="call-btn" onclick="startCall()" title="مكالمة صوتية">📞</button>
+        <button id="owner-logout-btn" onclick="ownerLogout()">🚪 إنهاء</button>
       </div>
       <div id="messages"></div>
       <div id="typing-indicator"></div>
       <div id="input-area">
         <div id="emoji-picker-wrap"></div>
-        <button id="send-btn" onclick="sendMessage()" title="إرسال">
+        <button id="send-btn" onclick="sendMessage()">
           <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
         <textarea id="msg-input" placeholder="اكتب رسالتك..." rows="1"
           onkeydown="handleKey(event)" oninput="autoResize(this); handleTyping()"></textarea>
-        <div id="rec-timer">
-          <div class="rec-dot"></div>
-          <span id="rec-time">0:00</span>
-        </div>
-        <button id="emoji-btn" onclick="toggleEmojiPicker()" title="إيموجي">😊</button>
-        <button id="media-btn" onclick="triggerMediaUpload()" title="إرسال صورة أو فيديو">📎</button>
+        <div id="rec-timer"><div class="rec-dot"></div><span id="rec-time">0:00</span></div>
+        <button id="emoji-btn" onclick="toggleEmojiPicker()">😊</button>
+        <button id="media-btn" onclick="triggerMediaUpload()">📎</button>
         <input id="media-input" type="file" accept="image/*,video/*" style="display:none" onchange="handleMediaUpload(event)" />
-        <button id="voice-btn" onclick="toggleRecording()" title="تسجيل صوتي">🎙️</button>
+        <button id="voice-btn" onclick="toggleRecording()">🎙️</button>
       </div>
     </div>
   </div>
 
-  <!-- VIEWER OVERLAY -->
+  <!-- CALL OVERLAY -->
+  <div id="call-overlay">
+    <div class="call-avatar">📞</div>
+    <div class="call-name" id="call-name">مكالمة</div>
+    <div class="call-status" id="call-status">جاري الاتصال...</div>
+    <div id="call-timer-display">00:00</div>
+    <div class="call-actions" id="call-actions-incoming">
+      <button class="call-action-btn reject" onclick="rejectCall()" title="رفض">📵</button>
+      <button class="call-action-btn accept" onclick="acceptCall()" title="قبول">📞</button>
+    </div>
+    <div class="call-actions" id="call-actions-active" style="display:none">
+      <button class="call-action-btn mute" id="mute-btn" onclick="toggleMute()" title="كتم">🎙️</button>
+      <button class="call-action-btn reject" onclick="endCall()" title="إنهاء">📵</button>
+      <button class="call-action-btn speaker" id="speaker-btn" onclick="toggleSpeaker()" title="سماعة">🔊</button>
+    </div>
+  </div>
+
+  <!-- VIEWER -->
   <div id="viewer-overlay">
     <div id="viewer-header">
-      <div id="viewer-label">
-        <div class="live-dot"></div>
-        بث مباشر
-      </div>
+      <div id="viewer-label"><div class="live-dot"></div>بث مباشر</div>
       <div class="viewer-controls">
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('small')" title="تصغير">⊟</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')" title="توسيع">⊞</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('full')" title="ملء الشاشة">⛶</button>
-        <button class="viewer-ctrl-btn danger" onclick="closeViewer()" title="إغلاق">✕</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('small')">⊟</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')">⊞</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('full')">⛶</button>
+        <button class="viewer-ctrl-btn danger" onclick="closeViewer()">✕</button>
       </div>
     </div>
     <div style="position:relative;">
       <video id="viewer-video" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
-      <div id="play-overlay" onclick="manualPlay()" style="
-        display:none; position:absolute; inset:0;
-        background:rgba(0,0,0,.55); cursor:pointer;
-        align-items:center; justify-content:center; flex-direction:column; gap:8px;">
+      <div id="play-overlay" onclick="manualPlay()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
         <div style="width:56px;height:56px;border-radius:50%;background:rgba(79,142,247,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
         <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
       </div>
@@ -445,11 +386,19 @@
     </div>
   </div>
 
-  <!-- عرض الصور بالحجم الكامل -->
+  <!-- FULLSCREEN IMG -->
   <div id="fullscreen-overlay">
     <button id="fullscreen-close" onclick="closeFullscreen()">✕</button>
     <img id="fullscreen-img" src="" alt="" />
   </div>
+
+  <!-- رنة المكالمة -->
+  <audio id="ringtone" loop>
+    <source src="https://www.soundjay.com/phone/sounds/phone-calling-1.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="busy-tone">
+    <source src="https://www.soundjay.com/phone/sounds/phone-busy-1.mp3" type="audio/mpeg">
+  </audio>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
@@ -461,7 +410,17 @@
     let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
     let streamPC = null, localStreamObj = null, localStreamStarted = false;
     let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
-    let insideChat = false; // flag - هل المستخدم جوا الشات فعلاً
+    let insideChat = false;
+
+    // ===== متغيرات المكالمة =====
+    let callPC = null;
+    let callStream = null;
+    let callTimer = null;
+    let callSeconds = 0;
+    let isMuted = false;
+    let isSpeaker = false;
+    let callAudioEl = null;
+    let inCall = false;
 
     const iceServers = {
       iceServers: [
@@ -483,18 +442,13 @@
       myName = name;
       socket.emit('join', name);
     }
-
-    document.getElementById('username-input').addEventListener('keydown', e => {
-      if (e.key === 'Enter') joinChat();
-    });
-
+    document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
     socket.on('connect', () => { myId = socket.id; });
 
     socket.on('join-rejected', (data) => {
       document.getElementById('join-screen').style.display = 'flex';
       document.getElementById('app').style.display = 'none';
-      myName = '';
-      insideChat = false;
+      myName = ''; insideChat = false;
       alert(data.reason);
     });
 
@@ -502,23 +456,13 @@
       insideChat = true;
       document.getElementById('join-screen').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
-
-      // لو المالك → وريه زر الخروج
-      if (myName === 'ahmedtony@#') {
-        document.getElementById('owner-logout-btn').style.display = 'inline-flex';
-      }
-
-      setTimeout(() => scrollDown(true), 50);
+      if (myName === 'ahmedtony@#') document.getElementById('owner-logout-btn').style.display = 'inline-flex';
       if (!Array.isArray(history)) return;
-      history.forEach(msg => {
-        if (!msg.text) return;
-        appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false);
-      });
+      history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false); });
       scrollDown(true);
     });
 
     socket.on('message', (data) => appendMessage(data, true));
-
     socket.on('system', (data) => {
       const msgs = document.getElementById('messages');
       const el = document.createElement('div');
@@ -527,7 +471,6 @@
       msgs.appendChild(el);
       scrollDown(true);
     });
-
     socket.on('users', (users) => {
       const list = document.getElementById('users-list');
       const count = document.getElementById('online-count');
@@ -539,27 +482,22 @@
         el.innerHTML = `<div class="user-dot"></div><span>${escapeHtml(name)}</span>`;
         list.appendChild(el);
       });
+      // تفعيل/تعطيل زر الاتصال
+      document.getElementById('call-btn').disabled = users.length < 2;
     });
-
     socket.on('typing', ({ username, isTyping }) => {
       document.getElementById('typing-indicator').textContent = isTyping ? `${username} يكتب الآن...` : '';
     });
 
-    // ===== خروج المالك القسري =====
+    // ===== خروج المالك =====
     function ownerLogout() {
-      if (!confirm('هتنهي المحادثة وتطرد الشخص التاني؟')) return;
+      if (!confirm('هتنهي المحادثة؟')) return;
       socket.emit('owner-logout');
     }
-
-    socket.on('force-logout', (data) => {
-      alert(data.reason);
-      resetToJoinScreen();
-    });
+    socket.on('force-logout', (data) => { alert(data.reason); resetToJoinScreen(); });
 
     function resetToJoinScreen() {
-      insideChat = false;
-      myName = '';
-      myId = null;
+      insideChat = false; myName = ''; myId = null;
       document.getElementById('app').style.display = 'none';
       document.getElementById('join-screen').style.display = 'flex';
       document.getElementById('username-input').value = '';
@@ -570,24 +508,20 @@
       if (localStreamObj) localStreamObj.getTracks().forEach(t => t.stop());
       if (streamPC) { try { streamPC.close(); } catch(e){} }
       if (window._viewerPC) { try { window._viewerPC.close(); } catch(e){} window._viewerPC = null; }
-      localStreamStarted = false;
-      localStreamObj = null;
-      streamPC = null;
+      localStreamStarted = false; localStreamObj = null; streamPC = null;
       stopStreamRecordingAndDownload();
+      endCall();
     }
 
-    // ===== رسائل نصية =====
+    // ===== رسائل =====
     function sendMessage() {
       const input = document.getElementById('msg-input');
       const text = input.value.trim();
       if (!text) return;
       socket.emit('message', { text });
-      input.value = '';
-      input.style.height = 'auto';
-      clearTyping();
-      scrollDown(true);
+      input.value = ''; input.style.height = 'auto';
+      clearTyping(); scrollDown(true);
     }
-
     function appendMessage(data, shouldScroll = true) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
@@ -602,74 +536,41 @@
       if (shouldScroll) scrollDown(true);
     }
 
-    // ===== رفع صورة / فيديو =====
-    function triggerMediaUpload() {
-      document.getElementById('media-input').click();
-    }
-
+    // ===== صور وفيديو =====
+    function triggerMediaUpload() { document.getElementById('media-input').click(); }
     function handleMediaUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const maxSize = 15 * 1024 * 1024;
-      if (file.size > maxSize) { alert('الملف كبير جداً! الحد الأقصى 15MB'); event.target.value = ''; return; }
+      const file = event.target.files[0]; if (!file) return;
+      if (file.size > 15 * 1024 * 1024) { alert('الحد الأقصى 15MB'); event.target.value = ''; return; }
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
-      if (!isImage && !isVideo) { alert('يرجى اختيار صورة أو فيديو فقط'); event.target.value = ''; return; }
+      if (!isImage && !isVideo) { alert('صورة أو فيديو فقط'); event.target.value = ''; return; }
       const reader = new FileReader();
-      reader.onloadend = () => {
-        socket.emit('media-upload', {
-          dataUrl: reader.result,
-          mediaType: isImage ? 'image' : 'video',
-          fileName: file.name
-        });
-      };
-      reader.readAsDataURL(file);
-      event.target.value = '';
+      reader.onloadend = () => { socket.emit('media-upload', { dataUrl: reader.result, mediaType: isImage ? 'image' : 'video', fileName: file.name }); };
+      reader.readAsDataURL(file); event.target.value = '';
     }
-
     socket.on('media-upload', (data) => appendMediaMessage(data));
-
     function appendMediaMessage(data) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
-      const el = document.createElement('div');
-      el.className = `msg ${isMe ? 'me' : 'other'}`;
-      let mediaHtml = '';
-      if (data.mediaType === 'image') {
-        mediaHtml = `<img class="msg-media-img" src="${data.dataUrl}" alt="صورة" onclick="openFullscreen('${data.dataUrl}')" />`;
-      } else {
-        mediaHtml = `<video class="msg-media-video" src="${data.dataUrl}" controls playsinline></video>`;
-      }
+      const el = document.createElement('div'); el.className = `msg ${isMe ? 'me' : 'other'}`;
+      let mediaHtml = data.mediaType === 'image'
+        ? `<img class="msg-media-img" src="${data.dataUrl}" onclick="openFullscreen('${data.dataUrl}')" />`
+        : `<video class="msg-media-video" src="${data.dataUrl}" controls playsinline></video>`;
       el.innerHTML = `
         ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
-        <div class="msg-bubble" style="padding:8px;">
-          <div class="msg-media-wrap">${mediaHtml}</div>
-        </div>
+        <div class="msg-bubble" style="padding:8px;">${mediaHtml}</div>
         <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
-      msgs.appendChild(el);
-      scrollDown(true);
+      msgs.appendChild(el); scrollDown(true);
     }
-
-    function openFullscreen(src) {
-      document.getElementById('fullscreen-img').src = src;
-      document.getElementById('fullscreen-overlay').classList.add('active');
-    }
-    function closeFullscreen() {
-      document.getElementById('fullscreen-overlay').classList.remove('active');
-      document.getElementById('fullscreen-img').src = '';
-    }
-    document.getElementById('fullscreen-overlay').addEventListener('click', (e) => {
-      if (e.target === document.getElementById('fullscreen-overlay')) closeFullscreen();
-    });
+    function openFullscreen(src) { document.getElementById('fullscreen-img').src = src; document.getElementById('fullscreen-overlay').classList.add('active'); }
+    function closeFullscreen() { document.getElementById('fullscreen-overlay').classList.remove('active'); document.getElementById('fullscreen-img').src = ''; }
+    document.getElementById('fullscreen-overlay').addEventListener('click', (e) => { if (e.target === document.getElementById('fullscreen-overlay')) closeFullscreen(); });
 
     // ===== تسجيل صوتي =====
     async function toggleRecording() {
       if (!insideChat) return;
-      if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
-        return;
-      }
+      if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
       try {
         await startLocalStreamOnce();
         const audioTrack = localStreamObj.getAudioTracks()[0];
@@ -678,8 +579,7 @@
         mediaRecorder = new MediaRecorder(audioStream, {
           mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
         });
-        audioChunks = [];
-        recSeconds = 0;
+        audioChunks = []; recSeconds = 0;
         mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
         mediaRecorder.onstop = () => {
           const duration = recSeconds;
@@ -688,18 +588,13 @@
             if (!audioChunks.length) return;
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
             sendVoiceMessage(blob, duration);
-            mediaRecorder = null;
-            audioChunks = [];
+            mediaRecorder = null; audioChunks = [];
           }, 50);
         };
         mediaRecorder.start(80);
         startRecordingUI();
-      } catch (err) {
-        console.error(err);
-        alert('مش قادر يوصل للكاميرا والميكروفون! تأكد من إذن المتصفح.');
-      }
+      } catch (err) { alert('تأكد من إذن الميكروفون!'); }
     }
-
     function startRecordingUI() {
       document.getElementById('voice-btn').classList.add('recording');
       document.getElementById('voice-btn').textContent = '⏹️';
@@ -710,12 +605,9 @@
       clearInterval(recInterval);
       recInterval = setInterval(() => {
         recSeconds++;
-        const m = Math.floor(recSeconds / 60);
-        const s = recSeconds % 60;
-        document.getElementById('rec-time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('rec-time').textContent = formatDuration(recSeconds);
       }, 1000);
     }
-
     function stopRecordingUI() {
       document.getElementById('voice-btn').classList.remove('recording');
       document.getElementById('voice-btn').textContent = '🎙️';
@@ -724,25 +616,20 @@
       document.getElementById('emoji-btn').style.display = '';
       document.getElementById('media-btn').style.display = '';
       clearInterval(recInterval);
-      keepInputVisible();
     }
-
     function sendVoiceMessage(blob, duration) {
       const reader = new FileReader();
       reader.onloadend = () => { socket.emit('voice', { audio: reader.result.split(',')[1], duration }); };
       reader.readAsDataURL(blob);
     }
-
     socket.on('voice', (data) => appendVoiceMessage(data));
-
     function appendVoiceMessage(data) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
       const audioSrc = `data:audio/webm;base64,${data.audio}`;
       const dur = formatDuration(data.duration || 0);
       const bars = generateBars();
-      const el = document.createElement('div');
-      el.className = `msg ${isMe ? 'me' : 'other'}`;
+      const el = document.createElement('div'); el.className = `msg ${isMe ? 'me' : 'other'}`;
       el.innerHTML = `
         ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
         <div class="msg-bubble voice-bubble">
@@ -752,61 +639,31 @@
         </div>
         <div class="msg-time">${escapeHtml(data.time || '')}</div>
       `;
-      msgs.appendChild(el);
-      scrollDown(true);
+      msgs.appendChild(el); scrollDown(true);
     }
-
     function playVoice(btn, src) {
-      const audio = new Audio(src);
-      btn.textContent = '⏸';
-      audio.play();
-      audio.onended = () => { btn.textContent = '▶'; };
-      audio.onpause = () => { btn.textContent = '▶'; };
+      const audio = new Audio(src); btn.textContent = '⏸';
+      audio.play(); audio.onended = () => { btn.textContent = '▶'; }; audio.onpause = () => { btn.textContent = '▶'; };
     }
 
-    function generateBars() {
-      const heights = [4,6,10,14,18,14,20,16,12,18,22,16,10,8,14,18,12,8,6,4];
-      return heights.map(h => `<span style="height:${h}px"></span>`).join('');
+    // ===== البث المباشر =====
+    async function startLocalStreamOnce() {
+      if (localStreamStarted && localStreamObj && streamPC) return;
+      try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
+      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+      streamPC = new RTCPeerConnection(iceServers);
+      streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
+      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+      streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+      const offer = await streamPC.createOffer();
+      await streamPC.setLocalDescription(offer);
+      socket.emit('stream-offer', { offer });
+      localStreamStarted = true;
     }
 
-    function formatDuration(s) {
-      const m = Math.floor(s / 60);
-      return `${m}:${(s % 60).toString().padStart(2,'0')}`;
-    }
-
-    // ===== البث المباشر - WebRTC =====
-  async function startLocalStreamOnce() {
-  if (localStreamStarted && localStreamObj && streamPC) return;
-  
-  // منع الشاشة من الإقفال
-  try {
-    await navigator.wakeLock.request('screen');
-  } catch (e) {
-    console.log('Wake Lock error:', e);
-  }
-  
-  localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-  streamPC = new RTCPeerConnection(iceServers);
-  streamPC.onconnectionstatechange = () => { console.log('Streamer state:', streamPC.connectionState); };
-  streamPC.oniceconnectionstatechange = () => {
-    console.log('Streamer ICE:', streamPC.iceConnectionState);
-    if (streamPC.iceConnectionState === 'failed') streamPC.restartIce();
-  };
-  localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
-  streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-  const offer = await streamPC.createOffer();
-  await streamPC.setLocalDescription(offer);
-  socket.emit('stream-offer', { offer });
-  localStreamStarted = true;
-}
-
-    // ===== استقبال البث - بس لو جوا الشات =====
     socket.on('stream-offer', async ({ offer }) => {
-      // تجاهل لو مش جوا الشات
       if (!insideChat) return;
-
       const pc = new RTCPeerConnection(iceServers);
-
       pc.ontrack = (e) => {
         if (!e.streams || !e.streams[0]) return;
         const video = document.getElementById('viewer-video');
@@ -821,40 +678,23 @@
             window._pendingStream = stream;
           });
         };
-        if (stream.active) tryPlay();
-        else { stream.addEventListener('active', tryPlay, { once: true }); setTimeout(tryPlay, 500); }
+        if (stream.active) tryPlay(); else { stream.addEventListener('active', tryPlay, { once: true }); setTimeout(tryPlay, 500); }
       };
-
-      pc.onconnectionstatechange = () => {
-        console.log('Connection state:', pc.connectionState);
-        if (pc.connectionState === 'failed') pc.restartIce();
-      };
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === 'disconnected') {
-          setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000);
-        }
-      };
+      pc.oniceconnectionstatechange = () => { if (pc.iceConnectionState === 'disconnected') setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000); };
       pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       socket.emit('stream-answer', { answer });
-
       window._viewerPC = pc;
       document.getElementById('viewer-overlay').classList.add('active');
       setViewerSize('small');
     });
-
-    socket.on('stream-answer', async ({ answer }) => {
-      if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
+    socket.on('stream-answer', async ({ answer }) => { if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer)); });
     socket.on('stream-ice', async ({ candidate }) => {
       const pc = streamPC || window._viewerPC;
-      try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch (e) { console.error(e); }
+      try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
     });
-
     socket.on('stream-end', () => {
       stopStreamRecordingAndDownload();
       document.getElementById('viewer-video').srcObject = null;
@@ -866,162 +706,270 @@
     // ===== تسجيل البث =====
     function startStreamRecording(stream) {
       if (streamRecorder) return;
-      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-        ? 'video/webm;codecs=vp9,opus'
-        : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '';
-      try {
-        streamRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-      } catch (e) { console.error('MediaRecorder error:', e); return; }
-      streamChunks = [];
-      streamRecSeconds = 0;
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
+      try { streamRecorder = new MediaRecorder(stream, { mimeType }); } catch(e) { return; }
+      streamChunks = []; streamRecSeconds = 0;
       streamRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) streamChunks.push(e.data); };
       streamRecorder.onstop = () => {
         stopStreamRecUI();
-        if (streamChunks.length === 0) return;
+        if (!streamChunks.length) return;
         const blob = new Blob(streamChunks, { type: 'video/webm' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
+        const a = document.createElement('a'); a.href = url;
         a.download = `بث-مباشر-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.webm`;
-        document.body.appendChild(a);
-        a.click();
+        document.body.appendChild(a); a.click();
         setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 3000);
-        streamRecorder = null;
-        streamChunks = [];
+        streamRecorder = null; streamChunks = [];
       };
       streamRecorder.start(1000);
       startStreamRecUI();
     }
-
-    function stopStreamRecordingAndDownload() {
-      if (streamRecorder && streamRecorder.state !== 'inactive') streamRecorder.stop();
-    }
-
+    function stopStreamRecordingAndDownload() { if (streamRecorder && streamRecorder.state !== 'inactive') streamRecorder.stop(); }
     function startStreamRecUI() {
       streamRecSeconds = 0;
       document.getElementById('rec-stream-indicator').classList.add('show');
       clearInterval(streamRecInterval);
       streamRecInterval = setInterval(() => {
         streamRecSeconds++;
-        const m = Math.floor(streamRecSeconds / 60);
-        const s = streamRecSeconds % 60;
-        document.getElementById('rec-stream-time').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        document.getElementById('rec-stream-time').textContent = formatDuration(streamRecSeconds);
       }, 1000);
     }
-
-    function stopStreamRecUI() {
-      clearInterval(streamRecInterval);
-      document.getElementById('rec-stream-indicator').classList.remove('show');
-    }
-
+    function stopStreamRecUI() { clearInterval(streamRecInterval); document.getElementById('rec-stream-indicator').classList.remove('show'); }
     function manualPlay() {
-      const video = document.getElementById('viewer-video');
-      video.muted = false;
+      const video = document.getElementById('viewer-video'); video.muted = false;
       video.play().then(() => {
         document.getElementById('play-overlay').style.display = 'none';
-        if (window._pendingStream) {
-          startStreamRecording(window._pendingStream);
-          window._pendingStream = null;
-        }
-      }).catch(err => { console.error('Manual play failed:', err); });
+        if (window._pendingStream) { startStreamRecording(window._pendingStream); window._pendingStream = null; }
+      }).catch(err => { console.error(err); });
     }
 
-    // ===== حجم المشاهد / السحب =====
-    function setViewerSize(size) {
-      const vo = document.getElementById('viewer-overlay');
-      vo.classList.remove('fullscreen-mode');
-      vo.style.cursor = 'grab';
-      if (size === 'small') {
-        vo.style.width = window.innerWidth <= 768 ? '200px' : '280px';
-        vo.style.height = '';
-      } else if (size === 'medium') {
-        vo.style.width = window.innerWidth <= 768 ? '320px' : '480px';
-        vo.style.height = '';
-      } else if (size === 'full') {
-        vo.style.width = '';
-        vo.style.height = '';
-        vo.style.top = '0';
-        vo.style.left = '0';
-        vo.style.bottom = 'auto';
-        vo.style.right = 'auto';
-        vo.classList.add('fullscreen-mode');
-        vo.style.cursor = 'default';
+    // ===== المكالمة الصوتية =====
+    async function startCall() {
+      if (inCall) return;
+      try {
+        // نستخدم ميكروفون مستقل عن البث
+        callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        callPC = new RTCPeerConnection(iceServers);
+        callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
+
+        callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
+        callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
+        callPC.onconnectionstatechange = () => {
+          if (callPC.connectionState === 'connected') showActiveCall();
+          if (callPC.connectionState === 'failed') endCall();
+        };
+
+        const offer = await callPC.createOffer();
+        await callPC.setLocalDescription(offer);
+        socket.emit('call-offer', { offer });
+
+        showCallUI('calling');
+        playRingtone(false);
+      } catch(err) { alert('تأكد من إذن الميكروفون!'); }
+    }
+
+    socket.on('call-offer', async ({ offer, callerName }) => {
+      if (inCall) { socket.emit('call-reject'); return; }
+      showCallUI('incoming', callerName);
+      playRingtone(true);
+
+      // نحفظ الـ offer عشان نستخدمه لما يقبل
+      window._pendingCallOffer = offer;
+    });
+
+    async function acceptCall() {
+      stopRingtone();
+      try {
+        callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        callPC = new RTCPeerConnection(iceServers);
+        callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
+
+        callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
+        callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
+        callPC.onconnectionstatechange = () => {
+          if (callPC.connectionState === 'connected') showActiveCall();
+          if (callPC.connectionState === 'failed') endCall();
+        };
+
+        await callPC.setRemoteDescription(new RTCSessionDescription(window._pendingCallOffer));
+        const answer = await callPC.createAnswer();
+        await callPC.setLocalDescription(answer);
+        socket.emit('call-answer', { answer });
+        inCall = true;
+      } catch(err) { alert('تأكد من إذن الميكروفون!'); endCall(); }
+    }
+
+    function rejectCall() {
+      stopRingtone();
+      socket.emit('call-reject');
+      hideCallUI();
+    }
+
+    socket.on('call-answer', async ({ answer }) => {
+      if (callPC) {
+        await callPC.setRemoteDescription(new RTCSessionDescription(answer));
+        inCall = true;
+      }
+    });
+
+    socket.on('call-ice', async ({ candidate }) => {
+      try { if (callPC) await callPC.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
+    });
+
+    socket.on('call-end', () => { endCall(); });
+    socket.on('call-reject', () => {
+      stopRingtone();
+      playBusyTone();
+      hideCallUI();
+      inCall = false;
+      cleanupCallPC();
+    });
+
+    function endCall() {
+      stopRingtone();
+      socket.emit('call-end');
+      inCall = false;
+      clearInterval(callTimer);
+      document.getElementById('call-timer-display').style.display = 'none';
+      hideCallUI();
+      cleanupCallPC();
+    }
+
+    function cleanupCallPC() {
+      if (callStream) { callStream.getTracks().forEach(t => t.stop()); callStream = null; }
+      if (callPC) { try { callPC.close(); } catch(e){} callPC = null; }
+      if (callAudioEl) { callAudioEl.srcObject = null; callAudioEl = null; }
+      isMuted = false; isSpeaker = false;
+      document.getElementById('mute-btn').textContent = '🎙️';
+      document.getElementById('mute-btn').classList.remove('active');
+      document.getElementById('speaker-btn').classList.remove('active');
+    }
+
+    function playRemoteAudio(stream) {
+      if (!callAudioEl) {
+        callAudioEl = new Audio();
+        callAudioEl.autoplay = true;
+        document.body.appendChild(callAudioEl);
+      }
+      callAudioEl.srcObject = stream;
+    }
+
+    function showCallUI(mode, callerName = '') {
+      const overlay = document.getElementById('call-overlay');
+      const incoming = document.getElementById('call-actions-incoming');
+      const active = document.getElementById('call-actions-active');
+      const status = document.getElementById('call-status');
+      const nameEl = document.getElementById('call-name');
+
+      overlay.classList.add('active');
+      document.getElementById('call-timer-display').style.display = 'none';
+
+      if (mode === 'incoming') {
+        nameEl.textContent = callerName || 'مكالمة واردة';
+        status.textContent = 'يتصل بك...';
+        incoming.style.display = 'flex';
+        active.style.display = 'none';
+      } else if (mode === 'calling') {
+        nameEl.textContent = 'جاري الاتصال...';
+        status.textContent = 'ينتظر الرد...';
+        incoming.style.display = 'none';
+        active.style.display = 'flex';
       }
     }
 
+    function showActiveCall() {
+      document.getElementById('call-status').textContent = 'متصل ✓';
+      document.getElementById('call-actions-incoming').style.display = 'none';
+      document.getElementById('call-actions-active').style.display = 'flex';
+      const timerEl = document.getElementById('call-timer-display');
+      timerEl.style.display = 'block';
+      callSeconds = 0;
+      clearInterval(callTimer);
+      callTimer = setInterval(() => {
+        callSeconds++;
+        timerEl.textContent = formatDuration(callSeconds);
+      }, 1000);
+    }
+
+    function hideCallUI() {
+      document.getElementById('call-overlay').classList.remove('active');
+      document.getElementById('call-actions-incoming').style.display = 'flex';
+      document.getElementById('call-actions-active').style.display = 'none';
+      clearInterval(callTimer);
+    }
+
+    function toggleMute() {
+      if (!callStream) return;
+      isMuted = !isMuted;
+      callStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+      const btn = document.getElementById('mute-btn');
+      btn.textContent = isMuted ? '🔇' : '🎙️';
+      btn.classList.toggle('active', isMuted);
+    }
+
+    function toggleSpeaker() {
+      isSpeaker = !isSpeaker;
+      if (callAudioEl) callAudioEl.volume = isSpeaker ? 1.0 : 0.7;
+      document.getElementById('speaker-btn').classList.toggle('active', isSpeaker);
+    }
+
+    // ===== رنة =====
+    function playRingtone(loop) {
+      try {
+        const rt = document.getElementById('ringtone');
+        rt.loop = loop; rt.currentTime = 0; rt.play().catch(()=>{});
+      } catch(e){}
+    }
+    function stopRingtone() {
+      try { const rt = document.getElementById('ringtone'); rt.pause(); rt.currentTime = 0; } catch(e){}
+    }
+    function playBusyTone() {
+      try { const bt = document.getElementById('busy-tone'); bt.currentTime = 0; bt.play().catch(()=>{}); } catch(e){}
+    }
+
+    // ===== حجم المشاهد =====
+    function setViewerSize(size) {
+      const vo = document.getElementById('viewer-overlay');
+      vo.classList.remove('fullscreen-mode'); vo.style.cursor = 'grab';
+      if (size === 'small') { vo.style.width = window.innerWidth <= 768 ? '200px' : '280px'; vo.style.height = ''; }
+      else if (size === 'medium') { vo.style.width = window.innerWidth <= 768 ? '320px' : '480px'; vo.style.height = ''; }
+      else if (size === 'full') { vo.style.width = ''; vo.style.height = ''; vo.style.top = '0'; vo.style.left = '0'; vo.style.bottom = 'auto'; vo.classList.add('fullscreen-mode'); vo.style.cursor = 'default'; }
+    }
     function closeViewer() {
       stopStreamRecordingAndDownload();
       document.getElementById('viewer-video').srcObject = null;
       const vo = document.getElementById('viewer-overlay');
-      vo.classList.remove('active');
-      vo.classList.remove('fullscreen-mode');
+      vo.classList.remove('active'); vo.classList.remove('fullscreen-mode');
       if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     }
 
     // ===== سحب المشاهد =====
     const vo = document.getElementById('viewer-overlay');
     let dragging = false, ox = 0, oy = 0;
-
     vo.addEventListener('mousedown', e => {
-      if (vo.classList.contains('fullscreen-mode')) return;
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
-      dragging = true;
-      ox = e.clientX - vo.offsetLeft;
-      oy = e.clientY - vo.offsetTop;
-      vo.style.cursor = 'grabbing';
+      if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
+      dragging = true; ox = e.clientX - vo.offsetLeft; oy = e.clientY - vo.offsetTop; vo.style.cursor = 'grabbing';
     });
-    document.addEventListener('mousemove', e => {
-      if (!dragging) return;
-      vo.style.left = (e.clientX - ox) + 'px';
-      vo.style.top = (e.clientY - oy) + 'px';
-      vo.style.bottom = 'auto';
-    });
-    document.addEventListener('mouseup', () => {
-      if (dragging) { dragging = false; if (!vo.classList.contains('fullscreen-mode')) vo.style.cursor = 'grab'; }
-    });
+    document.addEventListener('mousemove', e => { if (!dragging) return; vo.style.left = (e.clientX - ox) + 'px'; vo.style.top = (e.clientY - oy) + 'px'; vo.style.bottom = 'auto'; });
+    document.addEventListener('mouseup', () => { if (dragging) { dragging = false; if (!vo.classList.contains('fullscreen-mode')) vo.style.cursor = 'grab'; } });
     vo.addEventListener('touchstart', e => {
-      if (vo.classList.contains('fullscreen-mode')) return;
-      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
-      const touch = e.touches[0];
-      dragging = true;
-      ox = touch.clientX - vo.offsetLeft;
-      oy = touch.clientY - vo.offsetTop;
+      if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
+      const t = e.touches[0]; dragging = true; ox = t.clientX - vo.offsetLeft; oy = t.clientY - vo.offsetTop;
     }, { passive: true });
-    document.addEventListener('touchmove', e => {
-      if (!dragging) return;
-      const touch = e.touches[0];
-      vo.style.left = (touch.clientX - ox) + 'px';
-      vo.style.top = (touch.clientY - oy) + 'px';
-      vo.style.bottom = 'auto';
-    }, { passive: true });
+    document.addEventListener('touchmove', e => { if (!dragging) return; const t = e.touches[0]; vo.style.left = (t.clientX - ox) + 'px'; vo.style.top = (t.clientY - oy) + 'px'; vo.style.bottom = 'auto'; }, { passive: true });
     document.addEventListener('touchend', () => { dragging = false; });
 
     // ===== Helpers =====
-    function escapeHtml(str) {
-      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-    }
+    function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
     function formatText(str) { return escapeHtml(str).replace(/\n/g,'<br>'); }
     function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-    function autoResize(el) {
-      el.style.height = 'auto';
-      el.style.height = Math.min(el.scrollHeight, window.innerWidth <= 768 ? 100 : 120) + 'px';
-      keepInputVisible();
-    }
-    function handleTyping() {
-      if (!isTyping) { isTyping = true; socket.emit('typing', true); }
-      clearTimeout(typingTimer);
-      typingTimer = setTimeout(clearTyping, 1000);
-    }
+    function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+    function handleTyping() { if (!isTyping) { isTyping = true; socket.emit('typing', true); } clearTimeout(typingTimer); typingTimer = setTimeout(clearTyping, 1000); }
     function clearTyping() { isTyping = false; socket.emit('typing', false); clearTimeout(typingTimer); }
-    function scrollDown(force = false) {
-      const msgs = document.getElementById('messages');
-      const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 150;
-      if (force || nearBottom) requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; });
-    }
-    function keepInputVisible() {
-      const inputArea = document.getElementById('input-area');
-      setTimeout(() => inputArea.scrollIntoView({ block: 'end', behavior: 'smooth' }), 30);
-    }
+    function scrollDown(force = false) { const msgs = document.getElementById('messages'); const nearBottom = msgs.scrollHeight - msgs.scrollTop - msgs.clientHeight < 150; if (force || nearBottom) requestAnimationFrame(() => { msgs.scrollTop = msgs.scrollHeight; }); }
+    function generateBars() { return [4,6,10,14,18,14,20,16,12,18,22,16,10,8,14,18,12,8,6,4].map(h => `<span style="height:${h}px"></span>`).join(''); }
+    function formatDuration(s) { const m = Math.floor(s / 60); return `${m}:${(s % 60).toString().padStart(2,'0')}`; }
+
     function toggleEmojiPicker() {
       const wrap = document.getElementById('emoji-picker-wrap');
       if (pickerOpen) { wrap.classList.remove('open'); pickerOpen = false; return; }
@@ -1031,35 +979,26 @@
             const input = document.getElementById('msg-input');
             const pos = input.selectionStart;
             input.value = input.value.slice(0, pos) + emoji.native + input.value.slice(pos);
-            input.focus();
-            input.selectionStart = input.selectionEnd = pos + emoji.native.length;
+            input.focus(); input.selectionStart = input.selectionEnd = pos + emoji.native.length;
             autoResize(input);
           },
-          locale: 'ar', theme: 'dark', set: 'native',
-          skinTonePosition: 'search', previewPosition: 'none',
+          locale: 'ar', theme: 'dark', set: 'native', skinTonePosition: 'search', previewPosition: 'none',
         });
         wrap.appendChild(pickerInstance);
       }
-      wrap.classList.add('open');
-      pickerOpen = true;
-      keepInputVisible();
+      wrap.classList.add('open'); pickerOpen = true;
     }
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('emoji-picker-wrap');
       const btn = document.getElementById('emoji-btn');
-      if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) {
-        wrap.classList.remove('open');
-        pickerOpen = false;
-      }
+      if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) { wrap.classList.remove('open'); pickerOpen = false; }
     });
-    window.addEventListener('resize', () => { keepInputVisible(); scrollDown(); });
-    document.getElementById('msg-input').addEventListener('focus', () => {
-      setTimeout(() => { keepInputVisible(); scrollDown(true); }, 200);
-    });
+
     window.addEventListener('beforeunload', () => {
       stopStreamRecordingAndDownload();
-      if (streamPC) { try { streamPC.close(); } catch (e) {} }
-      if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch (e) {} });
+      endCall();
+      if (streamPC) { try { streamPC.close(); } catch(e){} }
+      if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
   </script>
 </body>
