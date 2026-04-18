@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>كاندي كراش</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#1a0533,#2d0a4e,#1a0533);min-height:100dvh;display:flex;align-items:center;justify-content:center}
+#game-wrap{display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px;width:100%;max-width:500px}
+#topbar{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;width:100%}
+.stat-box{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:12px;padding:8px 18px;text-align:center;color:#fff}
+.stat-label{font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:1px}
+.stat-val{font-size:22px;font-weight:600}
+#level-info{font-size:13px;color:rgba(255,255,255,0.6)}
+#progress-wrap{width:100%;max-width:420px;background:rgba(0,0,0,0.3);border-radius:20px;height:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+#progress-bar{height:100%;background:linear-gradient(90deg,#ff6b9d,#c44dff);border-radius:20px;transition:width 0.4s ease;width:0%}
+#msg{font-size:17px;font-weight:600;color:#fff;min-height:26px;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;background:rgba(0,0,0,0.3);border-radius:14px;padding:10px;border:2px solid rgba(255,255,255,0.1);touch-action:none}
+.cell{width:100%;aspect-ratio:1;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(18px,4vw,26px);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;user-select:none;border:2px solid transparent}
+.cell:hover{transform:scale(1.08)}
+.cell.selected{border-color:#fff;box-shadow:0 0 12px rgba(255,255,255,0.7);transform:scale(1.12)}
+.cell.hint{animation:hint-pulse 0.6s ease-in-out infinite alternate}
+.cell.matched{animation:pop 0.35s ease forwards}
+@keyframes hint-pulse{from{box-shadow:0 0 8px rgba(255,220,0,0.6)}to{box-shadow:0 0 20px rgba(255,220,0,1);transform:scale(1.15)}}
+@keyframes pop{0%{transform:scale(1.2);opacity:1}100%{transform:scale(0);opacity:0}}
+#btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btn{padding:10px 20px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;transition:transform 0.1s,opacity 0.1s;font-family:inherit}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn:active{transform:scale(0.97)}
+.btn-primary{background:linear-gradient(135deg,#ff6b9d,#c44dff);color:#fff}
+.btn-secondary{background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3)}
+.btn-back{background:linear-gradient(135deg,#4fc3f7,#0288d1);color:#fff}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:10}
+#overlay h2{font-size:30px;color:#fff}
+#overlay p{font-size:15px;color:rgba(255,255,255,0.7);text-align:center}
+.combo-popup{position:fixed;pointer-events:none;font-size:22px;font-weight:700;color:#ffd700;text-shadow:0 2px 8px rgba(0,0,0,0.6);animation:combo-fly 0.8s ease forwards;z-index:999}
+@keyframes combo-fly{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-60px) scale(1.4);opacity:0}}
+</style>
+</head>
+<body>
+<div id="game-wrap">
+  <div id="topbar">
+    <div class="stat-box"><div class="stat-label">النقاط</div><div class="stat-val" id="score">0</div></div>
+    <div class="stat-box"><div class="stat-label">المستوى</div><div class="stat-val" id="level-disp">1</div></div>
+    <div class="stat-box"><div class="stat-label">الحركات</div><div class="stat-val" id="moves-disp">20</div></div>
+  </div>
+  <div id="level-info">وصل لـ <span id="target-disp">500</span> نقطة</div>
+  <div id="progress-wrap"><div id="progress-bar"></div></div>
+  <div id="msg">اختر حلوى وحرّكها!</div>
+  <div id="board"></div>
+  <div id="btns">
+    <button class="btn btn-secondary" onclick="shuffleBoard()">🔀 خلط</button>
+    <button class="btn btn-secondary" onclick="showHint()">💡 تلميح</button>
+    <button class="btn btn-back" onclick="goBack()">💬الدعم</button>
+  </div>
+</div>
+
+<div id="overlay">
+  <div id="overlay-stars" style="font-size:36px"></div>
+  <h2 id="overlay-title"></h2>
+  <p id="overlay-msg"></p>
+  <button class="btn btn-primary" id="overlay-btn" onclick="nextAction()"></button>
+  <button class="btn btn-back" onclick="goBack()">💬الدعم</button>
+</div>
+
+<script>
+const CANDIES=['🍭','🍬','🍫','🍡','🧁','🍩','🎂'];
+const COLS=8,ROWS=8;
+let board=[],selected=null,score=0,level=1,processing=false;
+let movesLeft=20,hintCells=[],hintTimer=null,comboCount=0;
+
+const LEVELS=[
+  {target:500,moves:20},{target:1200,moves:18},{target:2200,moves:16},
+  {target:3500,moves:15},{target:5000,moves:14},{target:7000,moves:13}
+];
+
+function getLevel(){return LEVELS[Math.min(level-1,LEVELS.length-1)];}
+function rnd(){return CANDIES[Math.floor(Math.random()*CANDIES.length)];}
+
+function initBoard(){
+  board=[];
+  for(let r=0;r<ROWS;r++){board.push([]);for(let c=0;c<COLS;c++)board[r].push(rnd());}
+  while(findMatches().length>0)board=board.map(row=>row.map(()=>rnd()));
+  selected=null;processing=false;comboCount=0;
+  movesLeft=getLevel().moves;
+  render();updateUI();
+}
+
+function getBg(candy){
+  const map={'🍭':'rgba(255,100,150,0.35)','🍬':'rgba(100,200,255,0.35)','🍫':'rgba(150,80,40,0.35)','🍡':'rgba(200,150,255,0.35)','🧁':'rgba(255,200,100,0.35)','🍩':'rgba(255,140,60,0.35)','🎂':'rgba(100,220,150,0.35)'};
+  return map[candy]||'rgba(255,255,255,0.1)';
+}
+
+function render(){
+  const el=document.getElementById('board');
+  el.innerHTML='';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.textContent=board[r][c];
+      cell.dataset.r=r;cell.dataset.c=c;
+      cell.style.background=getBg(board[r][c]);
+      if(selected&&selected[0]===r&&selected[1]===c)cell.classList.add('selected');
+      cell.addEventListener('click',()=>handleClick(r,c));
+      cell.addEventListener('touchstart',e=>{e.preventDefault();handleClick(r,c);},{passive:false});
+      el.appendChild(cell);
+    }
+  }
+}
+
+function updateUI(){
+  const lv=getLevel();
+  document.getElementById('score').textContent=score;
+  document.getElementById('level-disp').textContent=level;
+  document.getElementById('moves-disp').textContent=movesLeft;
+  document.getElementById('target-disp').textContent=lv.target;
+  document.getElementById('progress-bar').style.width=Math.min(score/lv.target*100,100)+'%';
+}
+
+function handleClick(r,c){
+  if(processing)return;
+  clearHint();
+  if(!selected){selected=[r,c];render();return;}
+  const[sr,sc]=selected;
+  if(sr===r&&sc===c){selected=null;render();return;}
+  if(Math.abs(sr-r)+Math.abs(sc-c)===1){selected=null;swap(sr,sc,r,c);}
+  else{selected=[r,c];render();}
+}
+
+function swap(r1,c1,r2,c2){
+  processing=true;
+  [board[r1][c1],board[r2][c2]]=[board[r2][c2],board[r1][c1]];
+  render();
+  const matches=findMatches();
+  if(matches.length===0){
+    setTimeout(()=>{[board[r1][c1],board[r2][c2]]=[board[r2][c2],board[r1][c1]];render();setMsg('لا تطابق! جرب غيرها 😅');processing=false;},300);
+  } else {
+    movesLeft--;comboCount=0;
+    processMatches(matches);
+  }
+}
+
+function findMatches(){
+  const matched=new Set();
+  for(let r=0;r<ROWS;r++)
+    for(let c=0;c<COLS-2;c++)
+      if(board[r][c]&&board[r][c]===board[r][c+1]&&board[r][c]===board[r][c+2]){
+        let k=c;while(k<COLS&&board[r][k]===board[r][c])matched.add(r+','+k++);
+      }
+  for(let c=0;c<COLS;c++)
+    for(let r=0;r<ROWS-2;r++)
+      if(board[r][c]&&board[r][c]===board[r+1][c]&&board[r][c]===board[r+2][c]){
+        let k=r;while(k<ROWS&&board[k][c]===board[r][c])matched.add(k+++','+c);
+      }
+  return[...matched].map(k=>{const[r,c]=k.split(',');return[+r,+c];});
+}
+
+function processMatches(matches){
+  comboCount++;
+  const pts=matches.length*10*comboCount*(1+Math.floor(level/2));
+  score+=pts;
+  if(comboCount>1)showComboPopup('x'+comboCount+' كومبو! +'+pts);
+  else setMsg('+'+pts+' نقطة!');
+  matches.forEach(([r,c])=>{
+    const el=getCellEl(r,c);
+    if(el){el.classList.add('matched');board[r][c]=null;}
+  });
+  setTimeout(dropCandies,350);
+}
+
+function dropCandies(){
+  for(let c=0;c<COLS;c++){
+    let empties=[];
+    for(let r=ROWS-1;r>=0;r--)if(board[r][c]===null)empties.push(r);
+    for(const er of empties){
+      for(let r=er-1;r>=0;r--){
+        if(board[r][c]!==null){board[er][c]=board[r][c];board[r][c]=null;break;}
+      }
+    }
+    for(let r=0;r<ROWS;r++)if(board[r][c]===null)board[r][c]=rnd();
+  }
+  render();
+  setTimeout(()=>{
+    const m=findMatches();
+    if(m.length>0)processMatches(m);
+    else{processing=false;updateUI();checkEnd();}
+  },300);
+}
+
+function checkEnd(){
+  const lv=getLevel();
+  if(score>=lv.target){
+    const stars=score>=lv.target*1.5?3:score>=lv.target*1.2?2:1;
+    showOverlay('🎉 مستوى '+level+' كلير!','حصلت على '+score+' نقطة','⭐'.repeat(stars),'المستوى التالي');
+    level++;
+  } else if(movesLeft<=0){
+    showOverlay('😢 انتهت الحركات!','وصلت لـ '+score+' من '+lv.target,'','حاول تاني');
+  }
+}
+
+function showOverlay(title,msg,stars,btn){
+  document.getElementById('overlay-title').textContent=title;
+  document.getElementById('overlay-msg').textContent=msg;
+  document.getElementById('overlay-stars').textContent=stars;
+  document.getElementById('overlay-btn').textContent=btn;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function nextAction(){
+  document.getElementById('overlay').style.display='none';
+  initBoard();
+  setMsg('مستوى '+level+'! هيا! 🎮');
+}
+
+function getCellEl(r,c){return document.querySelector(`[data-r="${r}"][data-c="${c}"]`);}
+function setMsg(t){document.getElementById('msg').textContent=t;}
+
+function showComboPopup(text){
+  const el=document.createElement('div');
+  el.className='combo-popup';
+  el.textContent=text;
+  el.style.left=Math.random()*60+20+'%';
+  el.style.top='40%';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+  setMsg(text);
+}
+
+function shuffleBoard(){
+  if(processing)return;
+  board=board.map(row=>row.map(()=>rnd()));
+  while(findMatches().length>0)board=board.map(row=>row.map(()=>rnd()));
+  render();setMsg('تم الخلط! 🔀');
+}
+
+function showHint(){
+  if(processing)return;
+  clearHint();
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){
+        const nr=r+dr,nc=c+dc;
+        if(nr<0||nr>=ROWS||nc<0||nc>=COLS)continue;
+        [board[r][c],board[nr][nc]]=[board[nr][nc],board[r][c]];
+        const m=findMatches();
+        [board[r][c],board[nr][nc]]=[board[nr][nc],board[r][c]];
+        if(m.length>0){
+          hintCells=[[r,c],[nr,nc]];render();
+          hintCells.forEach(([hr,hc])=>{const el=getCellEl(hr,hc);if(el)el.classList.add('hint');});
+          setMsg('تلميح: حرّك الحلوى المضيئة 💡');
+          hintTimer=setTimeout(clearHint,2500);
+          return;
+        }
+      }
+    }
+  }
+  setMsg('لا حركات! سيتم الخلط 🔀');
+  setTimeout(shuffleBoard,500);
+}
+
+function clearHint(){
+  clearTimeout(hintTimer);
+  hintCells.forEach(([r,c])=>{const el=getCellEl(r,c);if(el)el.classList.remove('hint');});
+  hintCells=[];
+}
+
+function goBack(){
+  window.parent.postMessage({type:'go-back-to-chat'},'*');
+}
+
+initBoard();
+</script>
+</body>
+</html>

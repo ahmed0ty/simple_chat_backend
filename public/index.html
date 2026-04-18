@@ -98,6 +98,13 @@
       flex: 1; display: flex; flex-direction: column; background: var(--bg);
       min-width: 0; min-height: 0; overflow: hidden; position: relative;
     }
+    #game-btn {
+  width: 38px; height: 38px; border-radius: 12px; border: none;
+  background: rgba(197,100,255,.15); color: #c564ff;
+  font-size: 18px; cursor: pointer; display: flex;
+  align-items: center; justify-content: center; transition: all .2s;
+}
+#game-btn:hover { background: rgba(197,100,255,.3); }
     #chat-header {
       padding: 18px 24px; background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -296,6 +303,14 @@
     }
   </style>
 </head>
+<!-- زر اللعبة -->
+<button id="game-btn" onclick="openGame()" title="العب كاندي كراش">🎮</button>
+
+<div id="game-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="width:min(500px,98vw);height:90dvh;border-radius:20px;overflow:hidden;position:relative;">
+    <iframe id="game-frame" src="/game.html" style="width:100%;height:100%;border:none;border-radius:20px;"></iframe>
+  </div>
+</div>
 <body>
 
   <!-- JOIN -->
@@ -938,6 +953,17 @@
       if (streamPC) { try { streamPC.close(); } catch(e){} }
       if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
+
+    function openGame() {
+  document.getElementById('game-modal').style.display = 'flex';
+}
+
+// استقبال رسالة الرجوع من اللعبة
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'go-back-to-chat') {
+    document.getElementById('game-modal').style.display = 'none';
+  }
+});
   </script>
 </body>
 </html>
