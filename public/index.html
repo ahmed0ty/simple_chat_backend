@@ -114,6 +114,13 @@
     }
     #call-btn:hover { background: rgba(34,217,138,.3); }
     #call-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #clear-btn {
+      width: 38px; height: 38px; border-radius: 12px; border: none;
+      background: rgba(239,68,68,.12); color: var(--red);
+      font-size: 18px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: all .2s; flex-shrink: 0;
+    }
+    #clear-btn:hover { background: rgba(239,68,68,.25); }
     #owner-logout-btn {
       display: none; padding: 6px 14px;
       background: rgba(239,68,68,.15); border: 1px solid var(--red);
@@ -186,7 +193,6 @@
     #emoji-picker-wrap.open { display: block; }
     em-emoji-picker { --rgb-background: 22, 25, 32; --rgb-input: 30, 34, 48; --rgb-color: 232, 234, 242; --rgb-accent: 79, 142, 247; --border-radius: 0; height: 380px; width: 340px; max-width: 100%; }
 
-    /* ===== صوت رنين ===== */
     .voice-bubble { display: flex; align-items: center; gap: 10px; padding: 10px 14px; width: 100%; }
     .voice-play-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: rgba(255,255,255,.2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: background .2s; }
     .msg.other .voice-play-btn { background: rgba(79,142,247,.2); }
@@ -198,7 +204,6 @@
     #rec-timer.show { display: flex; }
     .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; }
 
-    /* ===== CALL UI ===== */
     #call-overlay {
       display: none; position: fixed; inset: 0; z-index: 9000;
       background: rgba(13,15,20,.96); backdrop-filter: blur(12px);
@@ -210,8 +215,7 @@
       width: 100px; height: 100px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       display: flex; align-items: center; justify-content: center;
-      font-size: 42px; box-shadow: 0 0 0 12px rgba(79,142,247,.15), 0 0 0 24px rgba(79,142,247,.07);
-      animation: call-pulse 2s infinite;
+      font-size: 42px; animation: call-pulse 2s infinite;
     }
     @keyframes call-pulse {
       0%, 100% { box-shadow: 0 0 0 12px rgba(79,142,247,.15), 0 0 0 24px rgba(79,142,247,.07); }
@@ -235,7 +239,6 @@
     .call-action-btn.speaker { background: var(--surface2); border: 1px solid var(--border); }
     .call-action-btn.speaker.active { background: rgba(79,142,247,.2); border-color: var(--accent); }
 
-    /* ===== VIEWER ===== */
     #viewer-overlay {
       display: none; position: fixed; bottom: 20px; left: 20px; width: 280px;
       border-radius: 20px; z-index: 9999; flex-direction: column; align-items: stretch;
@@ -257,13 +260,11 @@
     #rec-stream-indicator { display: none; align-items: center; gap: 6px; padding: 4px 12px; font-size: 11px; color: var(--red); font-weight: 700; background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0; }
     #rec-stream-indicator.show { display: flex; }
 
-    /* ===== FULLSCREEN IMG ===== */
     #fullscreen-overlay { display: none; position: fixed; inset: 0; z-index: 99999; background: #000; align-items: center; justify-content: center; }
     #fullscreen-overlay.active { display: flex; }
     #fullscreen-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
     #fullscreen-close { position: absolute; top: 16px; left: 16px; background: rgba(255,255,255,.12); border: none; border-radius: 10px; color: #fff; font-size: 22px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    /* ===== ANIMATIONS ===== */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes msgPop { from { opacity: 0; transform: scale(.96) translateY(4px); } to { opacity: 1; transform: none; } }
     @keyframes pulse-red {
@@ -324,6 +325,7 @@
         <h2>غرفة المحادثة</h2>
         <span id="status-dot">● متصل</span>
         <button id="call-btn" onclick="startCall()" title="مكالمة صوتية">📞</button>
+        <button id="clear-btn" onclick="clearChat()" title="مسح المحادثة">🗑️</button>
         <button id="owner-logout-btn" onclick="ownerLogout()">🚪 إنهاء</button>
       </div>
       <div id="messages"></div>
@@ -351,13 +353,13 @@
     <div class="call-status" id="call-status">جاري الاتصال...</div>
     <div id="call-timer-display">00:00</div>
     <div class="call-actions" id="call-actions-incoming">
-      <button class="call-action-btn reject" onclick="rejectCall()" title="رفض">📵</button>
-      <button class="call-action-btn accept" onclick="acceptCall()" title="قبول">📞</button>
+      <button class="call-action-btn reject" onclick="rejectCall()">📵</button>
+      <button class="call-action-btn accept" onclick="acceptCall()">📞</button>
     </div>
     <div class="call-actions" id="call-actions-active" style="display:none">
-      <button class="call-action-btn mute" id="mute-btn" onclick="toggleMute()" title="كتم">🎙️</button>
-      <button class="call-action-btn reject" onclick="endCall()" title="إنهاء">📵</button>
-      <button class="call-action-btn speaker" id="speaker-btn" onclick="toggleSpeaker()" title="سماعة">🔊</button>
+      <button class="call-action-btn mute" id="mute-btn" onclick="toggleMute()">🎙️</button>
+      <button class="call-action-btn reject" onclick="endCall()">📵</button>
+      <button class="call-action-btn speaker" id="speaker-btn" onclick="toggleSpeaker()">🔊</button>
     </div>
   </div>
 
@@ -392,7 +394,6 @@
     <img id="fullscreen-img" src="" alt="" />
   </div>
 
-  <!-- رنة المكالمة -->
   <audio id="ringtone" loop>
     <source src="https://www.soundjay.com/phone/sounds/phone-calling-1.mp3" type="audio/mpeg">
   </audio>
@@ -411,16 +412,8 @@
     let streamPC = null, localStreamObj = null, localStreamStarted = false;
     let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
     let insideChat = false;
-
-    // ===== متغيرات المكالمة =====
-    let callPC = null;
-    let callStream = null;
-    let callTimer = null;
-    let callSeconds = 0;
-    let isMuted = false;
-    let isSpeaker = false;
-    let callAudioEl = null;
-    let inCall = false;
+    let callPC = null, callStream = null, callTimer = null, callSeconds = 0;
+    let isMuted = false, isSpeaker = false, callAudioEl = null, inCall = false;
 
     const iceServers = {
       iceServers: [
@@ -433,6 +426,7 @@
     };
 
     socket.on("ping", () => socket.emit("pong"));
+    socket.on('connect', () => { myId = socket.id; });
 
     // ===== JOIN =====
     function joinChat() {
@@ -443,11 +437,8 @@
       socket.emit('join', name);
     }
     document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
-    socket.on('connect', () => { myId = socket.id; });
 
     socket.on('join-rejected', (data) => {
-      document.getElementById('join-screen').style.display = 'flex';
-      document.getElementById('app').style.display = 'none';
       myName = ''; insideChat = false;
       alert(data.reason);
     });
@@ -458,11 +449,21 @@
       document.getElementById('app').style.display = 'flex';
       if (myName === 'ahmedtony@#') document.getElementById('owner-logout-btn').style.display = 'inline-flex';
       if (!Array.isArray(history)) return;
-      history.forEach(msg => { if (!msg.text) return; appendMessage({ ...msg, id: msg.username === myName ? myId : 'other' }, false); });
+      history.forEach(msg => {
+        if (!msg.text) return;
+        // نستخدم senderId لو موجود، لو مش موجود نرجع للاسم
+        const isMe = msg.senderId ? msg.senderId === myId : msg.username === (myName === 'ahmedtony@#' ? 'المالك' : myName);
+        appendMessage({ ...msg, id: isMe ? myId : 'other' }, false);
+      });
       scrollDown(true);
     });
 
-    socket.on('message', (data) => appendMessage(data, true));
+    // ===== الرسائل — الحل الصح =====
+    socket.on('message', (data) => {
+      const isMe = data.senderId === myId;
+      appendMessage({ ...data, id: isMe ? myId : 'other' }, true);
+    });
+
     socket.on('system', (data) => {
       const msgs = document.getElementById('messages');
       const el = document.createElement('div');
@@ -471,6 +472,7 @@
       msgs.appendChild(el);
       scrollDown(true);
     });
+
     socket.on('users', (users) => {
       const list = document.getElementById('users-list');
       const count = document.getElementById('online-count');
@@ -482,11 +484,25 @@
         el.innerHTML = `<div class="user-dot"></div><span>${escapeHtml(name)}</span>`;
         list.appendChild(el);
       });
-      // تفعيل/تعطيل زر الاتصال
       document.getElementById('call-btn').disabled = users.length < 2;
     });
+
     socket.on('typing', ({ username, isTyping }) => {
       document.getElementById('typing-indicator').textContent = isTyping ? `${username} يكتب الآن...` : '';
+    });
+
+    // ===== مسح الشات =====
+    function clearChat() {
+      if (!confirm('مسح المحادثة بالكامل؟')) return;
+      socket.emit('clear-chat');
+    }
+    socket.on('chat-cleared', () => {
+      document.getElementById('messages').innerHTML = '';
+      const msgs = document.getElementById('messages');
+      const el = document.createElement('div');
+      el.className = 'sys-msg';
+      el.textContent = '🗑️ تم مسح المحادثة';
+      msgs.appendChild(el);
     });
 
     // ===== خروج المالك =====
@@ -513,7 +529,7 @@
       endCall();
     }
 
-    // ===== رسائل =====
+    // ===== إرسال الرسائل =====
     function sendMessage() {
       const input = document.getElementById('msg-input');
       const text = input.value.trim();
@@ -522,6 +538,7 @@
       input.value = ''; input.style.height = 'auto';
       clearTyping(); scrollDown(true);
     }
+
     function appendMessage(data, shouldScroll = true) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
@@ -536,7 +553,7 @@
       if (shouldScroll) scrollDown(true);
     }
 
-    // ===== صور وفيديو =====
+    // ===== ميديا =====
     function triggerMediaUpload() { document.getElementById('media-input').click(); }
     function handleMediaUpload(event) {
       const file = event.target.files[0]; if (!file) return;
@@ -548,7 +565,10 @@
       reader.onloadend = () => { socket.emit('media-upload', { dataUrl: reader.result, mediaType: isImage ? 'image' : 'video', fileName: file.name }); };
       reader.readAsDataURL(file); event.target.value = '';
     }
-    socket.on('media-upload', (data) => appendMediaMessage(data));
+    socket.on('media-upload', (data) => {
+      const isMe = data.senderId === myId;
+      appendMediaMessage({ ...data, id: isMe ? myId : 'other' });
+    });
     function appendMediaMessage(data) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
@@ -567,7 +587,7 @@
     function closeFullscreen() { document.getElementById('fullscreen-overlay').classList.remove('active'); document.getElementById('fullscreen-img').src = ''; }
     document.getElementById('fullscreen-overlay').addEventListener('click', (e) => { if (e.target === document.getElementById('fullscreen-overlay')) closeFullscreen(); });
 
-    // ===== تسجيل صوتي =====
+    // ===== صوت =====
     async function toggleRecording() {
       if (!insideChat) return;
       if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
@@ -603,10 +623,7 @@
       document.getElementById('emoji-btn').style.display = 'none';
       document.getElementById('media-btn').style.display = 'none';
       clearInterval(recInterval);
-      recInterval = setInterval(() => {
-        recSeconds++;
-        document.getElementById('rec-time').textContent = formatDuration(recSeconds);
-      }, 1000);
+      recInterval = setInterval(() => { recSeconds++; document.getElementById('rec-time').textContent = formatDuration(recSeconds); }, 1000);
     }
     function stopRecordingUI() {
       document.getElementById('voice-btn').classList.remove('recording');
@@ -622,7 +639,10 @@
       reader.onloadend = () => { socket.emit('voice', { audio: reader.result.split(',')[1], duration }); };
       reader.readAsDataURL(blob);
     }
-    socket.on('voice', (data) => appendVoiceMessage(data));
+    socket.on('voice', (data) => {
+      const isMe = data.senderId === myId;
+      appendVoiceMessage({ ...data, id: isMe ? myId : 'other' });
+    });
     function appendVoiceMessage(data) {
       const msgs = document.getElementById('messages');
       const isMe = data.id === myId;
@@ -660,7 +680,6 @@
       socket.emit('stream-offer', { offer });
       localStreamStarted = true;
     }
-
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
       const pc = new RTCPeerConnection(iceServers);
@@ -729,10 +748,7 @@
       streamRecSeconds = 0;
       document.getElementById('rec-stream-indicator').classList.add('show');
       clearInterval(streamRecInterval);
-      streamRecInterval = setInterval(() => {
-        streamRecSeconds++;
-        document.getElementById('rec-stream-time').textContent = formatDuration(streamRecSeconds);
-      }, 1000);
+      streamRecInterval = setInterval(() => { streamRecSeconds++; document.getElementById('rec-stream-time').textContent = formatDuration(streamRecSeconds); }, 1000);
     }
     function stopStreamRecUI() { clearInterval(streamRecInterval); document.getElementById('rec-stream-indicator').classList.remove('show'); }
     function manualPlay() {
@@ -743,54 +759,44 @@
       }).catch(err => { console.error(err); });
     }
 
-    // ===== المكالمة الصوتية =====
+    // ===== مكالمة صوتية =====
     async function startCall() {
       if (inCall) return;
       try {
-        // نستخدم ميكروفون مستقل عن البث
         callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         callPC = new RTCPeerConnection(iceServers);
         callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
-
         callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
         callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
         callPC.onconnectionstatechange = () => {
           if (callPC.connectionState === 'connected') showActiveCall();
           if (callPC.connectionState === 'failed') endCall();
         };
-
         const offer = await callPC.createOffer();
         await callPC.setLocalDescription(offer);
         socket.emit('call-offer', { offer });
-
         showCallUI('calling');
         playRingtone(false);
       } catch(err) { alert('تأكد من إذن الميكروفون!'); }
     }
-
     socket.on('call-offer', async ({ offer, callerName }) => {
       if (inCall) { socket.emit('call-reject'); return; }
       showCallUI('incoming', callerName);
       playRingtone(true);
-
-      // نحفظ الـ offer عشان نستخدمه لما يقبل
       window._pendingCallOffer = offer;
     });
-
     async function acceptCall() {
       stopRingtone();
       try {
         callStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         callPC = new RTCPeerConnection(iceServers);
         callStream.getTracks().forEach(t => callPC.addTrack(t, callStream));
-
         callPC.ontrack = (e) => { playRemoteAudio(e.streams[0]); };
         callPC.onicecandidate = (e) => { if (e.candidate) socket.emit('call-ice', { candidate: e.candidate }); };
         callPC.onconnectionstatechange = () => {
           if (callPC.connectionState === 'connected') showActiveCall();
           if (callPC.connectionState === 'failed') endCall();
         };
-
         await callPC.setRemoteDescription(new RTCSessionDescription(window._pendingCallOffer));
         const answer = await callPC.createAnswer();
         await callPC.setLocalDescription(answer);
@@ -798,43 +804,17 @@
         inCall = true;
       } catch(err) { alert('تأكد من إذن الميكروفون!'); endCall(); }
     }
-
-    function rejectCall() {
-      stopRingtone();
-      socket.emit('call-reject');
-      hideCallUI();
-    }
-
-    socket.on('call-answer', async ({ answer }) => {
-      if (callPC) {
-        await callPC.setRemoteDescription(new RTCSessionDescription(answer));
-        inCall = true;
-      }
-    });
-
-    socket.on('call-ice', async ({ candidate }) => {
-      try { if (callPC) await callPC.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
-    });
-
+    function rejectCall() { stopRingtone(); socket.emit('call-reject'); hideCallUI(); }
+    socket.on('call-answer', async ({ answer }) => { if (callPC) { await callPC.setRemoteDescription(new RTCSessionDescription(answer)); inCall = true; } });
+    socket.on('call-ice', async ({ candidate }) => { try { if (callPC) await callPC.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){} });
     socket.on('call-end', () => { endCall(); });
-    socket.on('call-reject', () => {
-      stopRingtone();
-      playBusyTone();
-      hideCallUI();
-      inCall = false;
-      cleanupCallPC();
-    });
-
+    socket.on('call-reject', () => { stopRingtone(); playBusyTone(); hideCallUI(); inCall = false; cleanupCallPC(); });
     function endCall() {
-      stopRingtone();
-      socket.emit('call-end');
-      inCall = false;
+      stopRingtone(); socket.emit('call-end'); inCall = false;
       clearInterval(callTimer);
       document.getElementById('call-timer-display').style.display = 'none';
-      hideCallUI();
-      cleanupCallPC();
+      hideCallUI(); cleanupCallPC();
     }
-
     function cleanupCallPC() {
       if (callStream) { callStream.getTracks().forEach(t => t.stop()); callStream = null; }
       if (callPC) { try { callPC.close(); } catch(e){} callPC = null; }
@@ -844,60 +824,40 @@
       document.getElementById('mute-btn').classList.remove('active');
       document.getElementById('speaker-btn').classList.remove('active');
     }
-
     function playRemoteAudio(stream) {
-      if (!callAudioEl) {
-        callAudioEl = new Audio();
-        callAudioEl.autoplay = true;
-        document.body.appendChild(callAudioEl);
-      }
+      if (!callAudioEl) { callAudioEl = new Audio(); callAudioEl.autoplay = true; document.body.appendChild(callAudioEl); }
       callAudioEl.srcObject = stream;
     }
-
     function showCallUI(mode, callerName = '') {
       const overlay = document.getElementById('call-overlay');
       const incoming = document.getElementById('call-actions-incoming');
       const active = document.getElementById('call-actions-active');
-      const status = document.getElementById('call-status');
-      const nameEl = document.getElementById('call-name');
-
       overlay.classList.add('active');
       document.getElementById('call-timer-display').style.display = 'none';
-
       if (mode === 'incoming') {
-        nameEl.textContent = callerName || 'مكالمة واردة';
-        status.textContent = 'يتصل بك...';
-        incoming.style.display = 'flex';
-        active.style.display = 'none';
-      } else if (mode === 'calling') {
-        nameEl.textContent = 'جاري الاتصال...';
-        status.textContent = 'ينتظر الرد...';
-        incoming.style.display = 'none';
-        active.style.display = 'flex';
+        document.getElementById('call-name').textContent = callerName || 'مكالمة واردة';
+        document.getElementById('call-status').textContent = 'يتصل بك...';
+        incoming.style.display = 'flex'; active.style.display = 'none';
+      } else {
+        document.getElementById('call-name').textContent = 'جاري الاتصال...';
+        document.getElementById('call-status').textContent = 'ينتظر الرد...';
+        incoming.style.display = 'none'; active.style.display = 'flex';
       }
     }
-
     function showActiveCall() {
       document.getElementById('call-status').textContent = 'متصل ✓';
       document.getElementById('call-actions-incoming').style.display = 'none';
       document.getElementById('call-actions-active').style.display = 'flex';
       const timerEl = document.getElementById('call-timer-display');
-      timerEl.style.display = 'block';
-      callSeconds = 0;
-      clearInterval(callTimer);
-      callTimer = setInterval(() => {
-        callSeconds++;
-        timerEl.textContent = formatDuration(callSeconds);
-      }, 1000);
+      timerEl.style.display = 'block'; callSeconds = 0; clearInterval(callTimer);
+      callTimer = setInterval(() => { callSeconds++; timerEl.textContent = formatDuration(callSeconds); }, 1000);
     }
-
     function hideCallUI() {
       document.getElementById('call-overlay').classList.remove('active');
       document.getElementById('call-actions-incoming').style.display = 'flex';
       document.getElementById('call-actions-active').style.display = 'none';
       clearInterval(callTimer);
     }
-
     function toggleMute() {
       if (!callStream) return;
       isMuted = !isMuted;
@@ -906,28 +866,15 @@
       btn.textContent = isMuted ? '🔇' : '🎙️';
       btn.classList.toggle('active', isMuted);
     }
-
     function toggleSpeaker() {
       isSpeaker = !isSpeaker;
       if (callAudioEl) callAudioEl.volume = isSpeaker ? 1.0 : 0.7;
       document.getElementById('speaker-btn').classList.toggle('active', isSpeaker);
     }
+    function playRingtone(loop) { try { const rt = document.getElementById('ringtone'); rt.loop = loop; rt.currentTime = 0; rt.play().catch(()=>{}); } catch(e){} }
+    function stopRingtone() { try { const rt = document.getElementById('ringtone'); rt.pause(); rt.currentTime = 0; } catch(e){} }
+    function playBusyTone() { try { const bt = document.getElementById('busy-tone'); bt.currentTime = 0; bt.play().catch(()=>{}); } catch(e){} }
 
-    // ===== رنة =====
-    function playRingtone(loop) {
-      try {
-        const rt = document.getElementById('ringtone');
-        rt.loop = loop; rt.currentTime = 0; rt.play().catch(()=>{});
-      } catch(e){}
-    }
-    function stopRingtone() {
-      try { const rt = document.getElementById('ringtone'); rt.pause(); rt.currentTime = 0; } catch(e){}
-    }
-    function playBusyTone() {
-      try { const bt = document.getElementById('busy-tone'); bt.currentTime = 0; bt.play().catch(()=>{}); } catch(e){}
-    }
-
-    // ===== حجم المشاهد =====
     function setViewerSize(size) {
       const vo = document.getElementById('viewer-overlay');
       vo.classList.remove('fullscreen-mode'); vo.style.cursor = 'grab';
@@ -943,23 +890,15 @@
       if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     }
 
-    // ===== سحب المشاهد =====
     const vo = document.getElementById('viewer-overlay');
     let dragging = false, ox = 0, oy = 0;
-    vo.addEventListener('mousedown', e => {
-      if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
-      dragging = true; ox = e.clientX - vo.offsetLeft; oy = e.clientY - vo.offsetTop; vo.style.cursor = 'grabbing';
-    });
+    vo.addEventListener('mousedown', e => { if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return; dragging = true; ox = e.clientX - vo.offsetLeft; oy = e.clientY - vo.offsetTop; vo.style.cursor = 'grabbing'; });
     document.addEventListener('mousemove', e => { if (!dragging) return; vo.style.left = (e.clientX - ox) + 'px'; vo.style.top = (e.clientY - oy) + 'px'; vo.style.bottom = 'auto'; });
     document.addEventListener('mouseup', () => { if (dragging) { dragging = false; if (!vo.classList.contains('fullscreen-mode')) vo.style.cursor = 'grab'; } });
-    vo.addEventListener('touchstart', e => {
-      if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return;
-      const t = e.touches[0]; dragging = true; ox = t.clientX - vo.offsetLeft; oy = t.clientY - vo.offsetTop;
-    }, { passive: true });
+    vo.addEventListener('touchstart', e => { if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return; const t = e.touches[0]; dragging = true; ox = t.clientX - vo.offsetLeft; oy = t.clientY - vo.offsetTop; }, { passive: true });
     document.addEventListener('touchmove', e => { if (!dragging) return; const t = e.touches[0]; vo.style.left = (t.clientX - ox) + 'px'; vo.style.top = (t.clientY - oy) + 'px'; vo.style.bottom = 'auto'; }, { passive: true });
     document.addEventListener('touchend', () => { dragging = false; });
 
-    // ===== Helpers =====
     function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
     function formatText(str) { return escapeHtml(str).replace(/\n/g,'<br>'); }
     function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
@@ -995,8 +934,7 @@
     });
 
     window.addEventListener('beforeunload', () => {
-      stopStreamRecordingAndDownload();
-      endCall();
+      stopStreamRecordingAndDownload(); endCall();
       if (streamPC) { try { streamPC.close(); } catch(e){} }
       if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
