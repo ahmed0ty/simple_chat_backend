@@ -198,7 +198,6 @@
 // server.listen(PORT, () => { console.log(`🚀 Server running on port ${PORT}`); });
 
 
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -247,16 +246,24 @@ io.on("connection", (socket) => {
 
   socket.on("join", (username) => {
     const name = (username || "").trim();
+    const isOwner = name === OWNER_NAME;
+    const ownerOnline = isOwnerOnline();
+    const count = getRoomCount();
 
-    // مينفعش يكون في أكتر من اتنين في نفس الوقت
-    if (getRoomCount() >= 2) {
+    // الغرفة ممتلئة
+    if (count >= 2) {
       socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
       socket.disconnect(true);
       return;
     }
 
-    // لو مش المالك ومحدش في الغرفة — يدخل ويستنى المالك
-    // مش شرط المالك يكون أول واحد يدخل
+    // فيه واحد بالفعل، الداخل مش المالك، والمالك مش موجود
+    if (count === 1 && !isOwner && !ownerOnline) {
+      socket.emit("join-rejected", { reason: "لا يمكن الدخول، المالك غير متواجد." });
+      socket.disconnect(true);
+      return;
+    }
+
     users[socket.id] = name;
     socket.username = name;
 
@@ -302,14 +309,12 @@ io.on("connection", (socket) => {
     });
   });
 
-  // ===== مسح الشات =====
   socket.on("clear-chat", () => {
     messages = [];
     fs.writeFileSync(MESSAGES_FILE, "[]");
     io.emit("chat-cleared");
   });
 
-  // ===== البث المباشر =====
   socket.on("stream-offer", (data) => {
     if (!users[socket.id]) return;
     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
@@ -323,7 +328,6 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
   });
 
-  // ===== المكالمة الصوتية =====
   socket.on("call-offer", (data) => {
     if (!users[socket.id]) return;
     const rawName = users[socket.id];
@@ -347,14 +351,12 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("call-reject");
   });
 
-  // ===== typing =====
   socket.on("typing", (isTyping) => {
     const rawName = users[socket.id] || "مجهول";
     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
     socket.broadcast.emit("typing", { username: displayName, isTyping });
   });
 
-  // ===== خروج المالك القسري =====
   socket.on("owner-logout", () => {
     if (users[socket.id] !== OWNER_NAME) return;
     io.emit("force-logout", { reason: "المالك أنهى المحادثة." });
