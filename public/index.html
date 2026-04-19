@@ -4,11 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>💬 شات سريع</title>
-  
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/emoji-mart@5.5.2/dist/browser.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -457,9 +454,9 @@
         const isMe = msg.senderId ? msg.senderId === myId : msg.username === (myName === 'ahmedtony@#' ? 'المالك' : myName);
         appendMessage({ ...msg, id: isMe ? myId : 'other' }, false);
       });
-      
-            startWakeWord();
-      initHandGesture(); // ← هنا
+      scrollDown(true);
+      startWakeWord();
+
     });
 
     socket.on('message', (data) => {
@@ -938,169 +935,79 @@
       if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
 
-    // ===== Hand Gesture Detection =====
+// ===== Wake Word للريكورد =====
+let wakeRec = null;
+let wakeRecording = false;
 
-    // ===== Dictation =====
-let wakeRecognition = null;
-let wakeWordActive = false;
-const STOP_WORD = 'اقفل';
-const SEND_WORD = 'ارسل';
-
-function startDictation() {
-
+async function startWakeWord() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+  
+  // جهز الميكروفون مرة واحدة بس عشان متحصلش صوت كل مرة
+  try {
+    await startLocalStreamOnce();
+  } catch(e) { return; }
+
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const input = document.getElementById('msg-input');
-  input.value = '';
-  input.placeholder = '🎙️ تكلم...';
-  input.style.borderColor = 'var(--green)';
-  const dictation = new SR();
-  dictation.lang = 'ar-EG';
-  dictation.continuous = true;
-  dictation.interimResults = true;
-  let finalText = '';
-  dictation.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript.trim().replace(/[أإآء]/g, 'ا');
-      if (e.results[i].isFinal) {
-        if (t.includes(SEND_WORD)) { dictation.abort(); stopDictation(dictation, true); return; }
-        if (t.includes(STOP_WORD)) { dictation.abort(); stopDictation(dictation, false); return; }
-        finalText += t + ' ';
-      } else { interim = t; }
-    }
-    input.value = finalText + interim;
-    autoResize(input);
-  };
-  dictation.onend = () => {
-    if (wakeWordActive) setTimeout(() => { try { dictation.start(); } catch(e){} }, 200);
-  };
-  dictation.onerror = () => {
-    if (wakeWordActive) setTimeout(() => { try { dictation.start(); } catch(e){} }, 200);
-  };
-  try { dictation.start(); } catch(e) { stopDictation(dictation, false); }
-  wakeRecognition = dictation;
-}
+  wakeRec = new SR();
+  wakeRec.lang = 'ar-EG';
+  wakeRec.continuous = true;      // ← مفتوح طول الوقت = مفيش صوت
+  wakeRec.interimResults = false; // نتائج نهائية بس
 
-function stopDictation(dictation, shouldSend) {
-  try { dictation.abort(); } catch(e){}
-  wakeRecognition = null;
-  wakeWordActive = false;
-  const input = document.getElementById('msg-input');
-  input.placeholder = 'اكتب رسالتك...';
-  input.style.borderColor = '';
-  if (shouldSend && input.value.trim()) sendMessage();
-  else { input.value = ''; autoResize(input); }
-}
-let handGestureActive = false;
-let gestureCamera = null;
-let handsModel = null;
-let lastGesture = null;
-let gestureDebounce = null;
-
-function isOpenHand(landmarks) {
-  // كل إصبع: طرفه أعلى من مفصله الأوسط
-  const fingers = [
-    [8, 6],   // سبابة
-    [12, 10], // وسطى
-    [16, 14], // بنصر
-    [20, 18], // خنصر
-  ];
-  let openCount = 0;
-  for (const [tip, mid] of fingers) {
-    if (landmarks[tip].y < landmarks[mid].y) openCount++;
-  }
-  // الإبهام
-  if (landmarks[4].x > landmarks[3].x) openCount++;
-  return openCount >= 4;
-}
-
-function isClosedFist(landmarks) {
-  const fingers = [
-    [8, 6],
-    [12, 10],
-    [16, 14],
-    [20, 18],
-  ];
-  let closedCount = 0;
-  for (const [tip, mid] of fingers) {
-    if (landmarks[tip].y > landmarks[mid].y) closedCount++;
-  }
-  return closedCount >= 4;
-}
-
-function initHandGesture() {
-  if (handGestureActive) return;
-  handGestureActive = true;
-
-  handsModel = new Hands({
-    locateFile: (file) =>
-      `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-  });
-
-  handsModel.setOptions({
-    maxNumHands: 1,
-    modelComplexity: 0, // أخف موديل عشان التليفون
-    minDetectionConfidence: 0.7,
-    minTrackingConfidence: 0.5,
-  });
-
-  handsModel.onResults((results) => {
+  wakeRec.onresult = (e) => {
     if (!insideChat) return;
-    if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) return;
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (!e.results[i].isFinal) continue;
+      const t = e.results[i][0].transcript.trim().replace(/[أإآء]/g, 'ا');
 
-    const landmarks = results.multiHandLandmarks[0];
-    const open = isOpenHand(landmarks);
-    const closed = isClosedFist(landmarks);
-
-    if (open && lastGesture !== 'open') {
-      lastGesture = 'open';
-      clearTimeout(gestureDebounce);
-      gestureDebounce = setTimeout(() => {
-        // فتح الكف → ابدأ dictation
-        if (!wakeWordActive) {
-          wakeWordActive = true;
-          startDictation();
-        }
-      }, 400);
-    } else if (closed && lastGesture !== 'closed') {
-      lastGesture = 'closed';
-      clearTimeout(gestureDebounce);
-      gestureDebounce = setTimeout(() => {
-        // قبضة → وقف وابعت
-        if (wakeWordActive && wakeRecognition) {
-          stopDictation(wakeRecognition, true);
-        }
-      }, 400);
+      if (!wakeRecording && t.includes('ابدا')) {
+        wakeRecording = true;
+        startVoiceRecord();
+      } else if (wakeRecording && t.includes('اقفل')) {
+        wakeRecording = false;
+        stopVoiceRecord();
+      }
     }
+  };
+
+  wakeRec.onend = () => {
+    if (insideChat) setTimeout(() => { try { wakeRec.start(); } catch(e){} }, 100);
+  };
+  wakeRec.onerror = (e) => {
+    if (e.error !== 'not-allowed' && insideChat) {
+      setTimeout(() => { try { wakeRec.start(); } catch(e){} }, 300);
+    }
+  };
+
+  try { wakeRec.start(); } catch(e){}
+}
+
+function startVoiceRecord() {
+  if (!localStreamObj) return;
+  const audioTrack = localStreamObj.getAudioTracks()[0];
+  if (!audioTrack) return;
+  const audioStream = new MediaStream([audioTrack]);
+  mediaRecorder = new MediaRecorder(audioStream, {
+    mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
   });
+  audioChunks = []; recSeconds = 0;
+  mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    stopRecordingUI();
+    setTimeout(() => {
+      if (!audioChunks.length) return;
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      sendVoiceMessage(blob, recSeconds);
+      mediaRecorder = null; audioChunks = [];
+    }, 50);
+  };
+  mediaRecorder.start(80);
+  startRecordingUI();
+}
 
-  // استخدم الكاميرا الأمامية الموجودة
-  const videoEl = document.getElementById('viewer-video');
-
-  // لو مفيش stream شغال، اعمل واحد مؤقت
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'user', width: 320, height: 240 },
-    audio: false
-  }).then((stream) => {
-    const hiddenVideo = document.createElement('video');
-    hiddenVideo.srcObject = stream;
-    hiddenVideo.autoplay = true;
-    hiddenVideo.playsinline = true;
-    hiddenVideo.style.display = 'none';
-    document.body.appendChild(hiddenVideo);
-
-    gestureCamera = new Camera(hiddenVideo, {
-      onFrame: async () => {
-        if (handsModel) await handsModel.send({ image: hiddenVideo });
-      },
-      width: 320,
-      height: 240,
-    });
-    gestureCamera.start();
-  }).catch(() => {
-    console.log('gesture camera not available');
-  });
+function stopVoiceRecord() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+  }
 }
   </script>
 </body>
