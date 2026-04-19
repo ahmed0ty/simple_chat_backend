@@ -455,8 +455,6 @@
         appendMessage({ ...msg, id: isMe ? myId : 'other' }, false);
       });
       scrollDown(true);
-      startWakeWord();
-
     });
 
     socket.on('message', (data) => {
@@ -934,114 +932,6 @@
       if (streamPC) { try { streamPC.close(); } catch(e){} }
       if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
-
-// ===== Wake Word =====
-let wakeRec = null;
-let wakeRecording = false;
-
-function startWakeWord() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
-  wakeRec = new SR();
-  wakeRec.lang = 'ar-EG';
-  wakeRec.continuous = false;
-  wakeRec.interimResults = false;
-
-  wakeRec.onresult = async (e) => {
-    if (!insideChat) return;
-    const t = e.results[0][0].transcript.trim().replace(/[أإآء]/g, 'ا');
-
-    if (!wakeRecording && t.includes('ابدا')) {
-      wakeRecording = true;
-      wakeRec.stop(); // وقف الاستماع
-      await startVoiceRecord();
-      startListenForStop(); // ابدأ تسمع اقفل بس
-    }
-  };
-
-  wakeRec.onend = () => {
-    // لو لسه مش في ريكورد، أعد الاستماع
-    if (insideChat && !wakeRecording) {
-      setTimeout(() => { try { wakeRec.start(); } catch(e){} }, 300);
-    }
-  };
-
-  wakeRec.onerror = () => {
-    if (insideChat && !wakeRecording) {
-      setTimeout(() => { try { wakeRec.start(); } catch(e){} }, 500);
-    }
-  };
-
-  try { wakeRec.start(); } catch(e){}
-}
-
-function startListenForStop() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
-  const stopRec = new SR();
-  stopRec.lang = 'ar-EG';
-  stopRec.continuous = false;
-  stopRec.interimResults = false;
-
-  stopRec.onresult = (e) => {
-    const t = e.results[0][0].transcript.trim().replace(/[أإآء]/g, 'ا');
-    if (t.includes('اقفل')) {
-      wakeRecording = false;
-      stopRec.stop();
-      stopVoiceRecord();
-    }
-  };
-
-  stopRec.onend = () => {
-    // لو لسه بيسجل ومجاش اقفل، أعد الاستماع
-    if (insideChat && wakeRecording) {
-      setTimeout(() => { try { stopRec.start(); } catch(e){} }, 300);
-    }
-  };
-
-  stopRec.onerror = () => {
-    if (insideChat && wakeRecording) {
-      setTimeout(() => { try { stopRec.start(); } catch(e){} }, 500);
-    }
-  };
-
-  try { stopRec.start(); } catch(e){}
-}
-
-async function startVoiceRecord() {
-  try {
-    await startLocalStreamOnce();
-    const audioTrack = localStreamObj.getAudioTracks()[0];
-    if (!audioTrack) return;
-    const audioStream = new MediaStream([audioTrack]);
-    mediaRecorder = new MediaRecorder(audioStream, {
-      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
-    });
-    audioChunks = []; recSeconds = 0;
-    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = () => {
-      stopRecordingUI();
-      setTimeout(() => {
-        if (!audioChunks.length) return;
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        sendVoiceMessage(blob, recSeconds);
-        mediaRecorder = null; audioChunks = [];
-        // بعد ما الريكورد اتبعت، ابدأ تسمع ابدا تاني
-        setTimeout(() => { try { wakeRec.start(); } catch(e){} }, 500);
-      }, 50);
-    };
-    mediaRecorder.start(80);
-    startRecordingUI();
-  } catch(err) {}
-}
-
-function stopVoiceRecord() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-  }
-}
   </script>
 </body>
 </html>
