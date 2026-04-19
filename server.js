@@ -250,14 +250,12 @@ io.on("connection", (socket) => {
     const ownerOnline = isOwnerOnline();
     const count = getRoomCount();
 
-    // الغرفة ممتلئة
     if (count >= 2) {
       socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
       socket.disconnect(true);
       return;
     }
 
-    // فيه واحد بالفعل، الداخل مش المالك، والمالك مش موجود
     if (count === 1 && !isOwner && !ownerOnline) {
       socket.emit("join-rejected", { reason: "لا يمكن الدخول، المالك غير متواجد." });
       socket.disconnect(true);
@@ -269,7 +267,16 @@ io.on("connection", (socket) => {
 
     const displayName = name === OWNER_NAME ? "المالك" : name;
 
-    socket.emit("history", messages.filter((m) => m.type !== "voice"));
+    // ← الجزء ده اتغير
+    try {
+      const data = fs.readFileSync(MESSAGES_FILE, "utf8");
+      const parsed = JSON.parse(data);
+      messages = Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      messages = [];
+    }
+
+    socket.emit("history", messages.filter((m) => m.type !== "voice" && m.text));
     io.emit("system", { text: `${displayName} انضم إلى المحادثة`, time: getTime() });
     emitUsers();
   });
@@ -310,10 +317,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("clear-chat", () => {
-    messages = [];
-    fs.writeFileSync(MESSAGES_FILE, "[]");
-    io.emit("chat-cleared");
-  });
+  messages = [];
+  fs.writeFileSync(MESSAGES_FILE, "[]");  // ← writeFileSync مش writeFile
+  io.emit("chat-cleared");
+});
 
   socket.on("stream-offer", (data) => {
     if (!users[socket.id]) return;
