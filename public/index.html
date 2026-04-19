@@ -415,18 +415,14 @@ let wakeLoopRunning = false;
 function startWakeWord() {
   if (wakeLoopRunning) return;
   wakeLoopRunning = true;
-  wakeRecognition = null;
   spawnWakeListener();
 }
 
 function spawnWakeListener() {
-  // لو مش في الشات أو الريكورد شغال، وقف
   if (!insideChat || wakeWordActive) return;
-
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  // امسح القديم
   if (wakeRecognition) {
     try { wakeRecognition.abort(); } catch(e){}
     wakeRecognition = null;
@@ -434,7 +430,7 @@ function spawnWakeListener() {
 
   wakeRecognition = new SR();
   wakeRecognition.lang = 'ar-EG';
-  wakeRecognition.continuous = false;
+  wakeRecognition.continuous = true;   // ← continuous بدل false عشان متقطعش
   wakeRecognition.interimResults = true;
 
   wakeRecognition.onresult = (e) => {
@@ -451,16 +447,14 @@ function spawnWakeListener() {
 
   wakeRecognition.onend = () => {
     if (!insideChat || wakeWordActive) return;
-    // أعد الاستماع فوراً بدون توقف
     wakeRecognition = null;
-    setTimeout(spawnWakeListener, 100);
+    setTimeout(spawnWakeListener, 300);
   };
 
   wakeRecognition.onerror = (e) => {
     wakeRecognition = null;
     if (!insideChat || wakeWordActive) return;
-    // في حالة no-speech أو network، أعد بسرعة
-    const delay = e.error === 'not-allowed' ? 5000 : 200;
+    const delay = e.error === 'not-allowed' ? 5000 : 300;
     setTimeout(spawnWakeListener, delay);
   };
 
@@ -468,17 +462,15 @@ function spawnWakeListener() {
     wakeRecognition.start();
   } catch(e) {
     wakeRecognition = null;
-    setTimeout(spawnWakeListener, 300);
+    setTimeout(spawnWakeListener, 500);
   }
 }
 
 async function startAutoRecording() {
-  // وقف wake listener أثناء التسجيل
   if (wakeRecognition) {
     try { wakeRecognition.abort(); } catch(e){}
     wakeRecognition = null;
   }
-
   await toggleRecording();
   spawnStopListener();
 }
@@ -495,7 +487,7 @@ function spawnStopListener() {
 
   recordingRecognition = new SR();
   recordingRecognition.lang = 'ar-EG';
-  recordingRecognition.continuous = false;
+  recordingRecognition.continuous = true;  // ← continuous عشان متقطعش ومتعملش صوت
   recordingRecognition.interimResults = true;
 
   recordingRecognition.onresult = (e) => {
@@ -509,16 +501,15 @@ function spawnStopListener() {
   };
 
   recordingRecognition.onend = () => {
-    // لو لسه شغال ولم يجي كلمة اقفل، أعد الاستماع
     if (wakeWordActive) {
       recordingRecognition = null;
-      setTimeout(spawnStopListener, 100);
+      setTimeout(spawnStopListener, 300);
     }
   };
 
   recordingRecognition.onerror = () => {
     recordingRecognition = null;
-    if (wakeWordActive) setTimeout(spawnStopListener, 200);
+    if (wakeWordActive) setTimeout(spawnStopListener, 300);
   };
 
   try {
@@ -530,25 +521,22 @@ function spawnStopListener() {
 }
 
 function stopAutoRecording() {
-  // وقف stop listener
   if (recordingRecognition) {
     try { recordingRecognition.abort(); } catch(e){}
     recordingRecognition = null;
   }
 
+  wakeWordActive = false;   // ← اتعمل هنا الأول عشان الـ onstop الأصلي يشتغل عادي
+
   if (mediaRecorder && mediaRecorder.state === 'recording') {
-    // بعد ما الريكورد يخلص، رجع للـ wake listener
-    const oldOnStop = mediaRecorder.onstop;
-    mediaRecorder.onstop = (e) => {
-      if (oldOnStop) oldOnStop(e);
-      wakeWordActive = false;
-      setTimeout(spawnWakeListener, 600);
-    };
-    mediaRecorder.stop();
-  } else {
-    wakeWordActive = false;
-    setTimeout(spawnWakeListener, 300);
+    mediaRecorder.stop();   // ← مش بنعمل override للـ onstop خالص
   }
+
+  // بعد ما الرسالة اتبعتت، رجع للـ wake listener
+  setTimeout(() => {
+    wakeLoopRunning = false;   // ← reset عشان يقدر يبدأ تاني
+    startWakeWord();
+  }, 1500);   // ← 1.5 ثانية كافية إن الرسالة تتبعت وبعدين يبدأ يسمع
 }
     const socket = io({ transports: ["websocket", "polling"] });
 
