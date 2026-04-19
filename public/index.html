@@ -403,6 +403,153 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+
+ // ===== Wake Word System =====
+let wakeRecognition = null;
+let wakeWordActive = false;
+let recordingRecognition = null;
+const WAKE_WORD = 'ابدا';
+const STOP_WORD = 'اقفل';
+let wakeLoopRunning = false;
+
+function startWakeWord() {
+  if (wakeLoopRunning) return;
+  wakeLoopRunning = true;
+  wakeRecognition = null;
+  spawnWakeListener();
+}
+
+function spawnWakeListener() {
+  // لو مش في الشات أو الريكورد شغال، وقف
+  if (!insideChat || wakeWordActive) return;
+
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  // امسح القديم
+  if (wakeRecognition) {
+    try { wakeRecognition.abort(); } catch(e){}
+    wakeRecognition = null;
+  }
+
+  wakeRecognition = new SR();
+  wakeRecognition.lang = 'ar-EG';
+  wakeRecognition.continuous = false;
+  wakeRecognition.interimResults = true;
+
+  wakeRecognition.onresult = (e) => {
+    if (!insideChat || wakeWordActive) return;
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript.trim().replace(/[أإآء]/g, 'ا');
+      if (t.includes(WAKE_WORD)) {
+        wakeWordActive = true;
+        startAutoRecording();
+        return;
+      }
+    }
+  };
+
+  wakeRecognition.onend = () => {
+    if (!insideChat || wakeWordActive) return;
+    // أعد الاستماع فوراً بدون توقف
+    wakeRecognition = null;
+    setTimeout(spawnWakeListener, 100);
+  };
+
+  wakeRecognition.onerror = (e) => {
+    wakeRecognition = null;
+    if (!insideChat || wakeWordActive) return;
+    // في حالة no-speech أو network، أعد بسرعة
+    const delay = e.error === 'not-allowed' ? 5000 : 200;
+    setTimeout(spawnWakeListener, delay);
+  };
+
+  try {
+    wakeRecognition.start();
+  } catch(e) {
+    wakeRecognition = null;
+    setTimeout(spawnWakeListener, 300);
+  }
+}
+
+async function startAutoRecording() {
+  // وقف wake listener أثناء التسجيل
+  if (wakeRecognition) {
+    try { wakeRecognition.abort(); } catch(e){}
+    wakeRecognition = null;
+  }
+
+  await toggleRecording();
+  spawnStopListener();
+}
+
+function spawnStopListener() {
+  if (!wakeWordActive) return;
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (recordingRecognition) {
+    try { recordingRecognition.abort(); } catch(e){}
+    recordingRecognition = null;
+  }
+
+  recordingRecognition = new SR();
+  recordingRecognition.lang = 'ar-EG';
+  recordingRecognition.continuous = false;
+  recordingRecognition.interimResults = true;
+
+  recordingRecognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript.trim().replace(/[أإآء]/g, 'ا');
+      if (t.includes(STOP_WORD)) {
+        stopAutoRecording();
+        return;
+      }
+    }
+  };
+
+  recordingRecognition.onend = () => {
+    // لو لسه شغال ولم يجي كلمة اقفل، أعد الاستماع
+    if (wakeWordActive) {
+      recordingRecognition = null;
+      setTimeout(spawnStopListener, 100);
+    }
+  };
+
+  recordingRecognition.onerror = () => {
+    recordingRecognition = null;
+    if (wakeWordActive) setTimeout(spawnStopListener, 200);
+  };
+
+  try {
+    recordingRecognition.start();
+  } catch(e) {
+    recordingRecognition = null;
+    if (wakeWordActive) setTimeout(spawnStopListener, 300);
+  }
+}
+
+function stopAutoRecording() {
+  // وقف stop listener
+  if (recordingRecognition) {
+    try { recordingRecognition.abort(); } catch(e){}
+    recordingRecognition = null;
+  }
+
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    // بعد ما الريكورد يخلص، رجع للـ wake listener
+    const oldOnStop = mediaRecorder.onstop;
+    mediaRecorder.onstop = (e) => {
+      if (oldOnStop) oldOnStop(e);
+      wakeWordActive = false;
+      setTimeout(spawnWakeListener, 600);
+    };
+    mediaRecorder.stop();
+  } else {
+    wakeWordActive = false;
+    setTimeout(spawnWakeListener, 300);
+  }
+}
     const socket = io({ transports: ["websocket", "polling"] });
 
     let myId = null, myName = '';
@@ -455,6 +602,7 @@
         appendMessage({ ...msg, id: isMe ? myId : 'other' }, false);
       });
       scrollDown(true);
+      startWakeWord(); // ← هنا
     });
 
     socket.on('message', (data) => {
