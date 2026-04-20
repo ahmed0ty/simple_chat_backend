@@ -216,15 +216,11 @@
 
 
 
-
-
-
-
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
-const fs = require("fs");
+const { Redis } = require("@upstash/redis");
 
 const app = express();
 const server = http.createServer(app);
@@ -235,19 +231,20 @@ const io = new Server(server, {
 
 app.use(express.static(path.join(__dirname, "public")));
 
-const MESSAGES_FILE = path.join(__dirname, "messages.json");
-
-if (!fs.existsSync(MESSAGES_FILE)) {
-  fs.writeFileSync(MESSAGES_FILE, "[]");
-}
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 let messages = [];
-try {
-  messages = JSON.parse(fs.readFileSync(MESSAGES_FILE, "utf8"));
-  if (!Array.isArray(messages)) messages = [];
-} catch (err) {
-  messages = [];
-}
+(async () => {
+  try {
+    const saved = await redis.get("messages");
+    messages = Array.isArray(saved) ? saved : [];
+  } catch (e) {
+    messages = [];
+  }
+})();
 
 const users = {};
 const OWNER_NAME = "ahmedtony@#";
@@ -294,7 +291,7 @@ io.on("connection", (socket) => {
     emitUsers();
   });
 
-  socket.on("message", (data) => {
+  socket.on("message", async (data) => {
     const rawName = users[socket.id] || "مجهول";
     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
     const text = typeof data?.text === "string" ? data.text.trim() : "";
@@ -302,7 +299,7 @@ io.on("connection", (socket) => {
     const msgData = { senderId: socket.id, username: displayName, text, time: getTime(), type: "text" };
     messages.push(msgData);
     io.emit("message", msgData);
-    saveMessages();
+    await saveMessages();
   });
 
   socket.on("voice", (data) => {
@@ -327,10 +324,10 @@ io.on("connection", (socket) => {
     });
   });
 
-  socket.on("clear-chat", () => {
+  socket.on("clear-chat", async () => {
     messages = [];
     try {
-      fs.writeFileSync(MESSAGES_FILE, "[]");
+      await redis.set("messages", []);
     } catch (err) {
       console.error("Error clearing messages:", err);
     }
@@ -379,11 +376,11 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("typing", { username: displayName, isTyping });
   });
 
-  socket.on("owner-logout", () => {
+  socket.on("owner-logout", async () => {
     if (users[socket.id] !== OWNER_NAME) return;
     messages = [];
     try {
-      fs.writeFileSync(MESSAGES_FILE, "[]");
+      await redis.set("messages", []);
     } catch (err) {
       console.error("Error clearing messages on logout:", err);
     }
@@ -412,10 +409,10 @@ function emitUsers() {
   io.emit("users", displayList);
 }
 
-function saveMessages() {
+async function saveMessages() {
   if (messages.length > 500) messages = messages.slice(-500);
   try {
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages));
+    await redis.set("messages", messages);
   } catch (err) {
     console.error("Error saving messages:", err);
   }
