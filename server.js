@@ -1,5 +1,4 @@
 
-
 // const express = require("express");
 // const http = require("http");
 // const { Server } = require("socket.io");
@@ -48,19 +47,18 @@
 
 //   socket.on("join", (username) => {
 //     const name = (username || "").trim();
+//     const isOwner = name === OWNER_NAME;
+//     const ownerOnline = isOwnerOnline();
+//     const count = getRoomCount();
 
-//     if (getRoomCount() >= 2) {
+//     if (count >= 2) {
 //       socket.emit("join-rejected", { reason: "الغرفة ممتلئة! مسموح بشخصين فقط." });
 //       socket.disconnect(true);
 //       return;
 //     }
 
-//     users[socket.id] = name;
-//     socket.username = name;
-
-//     if (!isOwnerOnline() && name !== OWNER_NAME) {
-//       socket.emit("join-rejected", { reason: "مش مسموح بالدخول بدون المالك." });
-//       delete users[socket.id];
+//     if (count === 1 && !isOwner && !ownerOnline) {
+//       socket.emit("join-rejected", { reason: "لا يمكن الدخول، المالك غير متواجد." });
 //       socket.disconnect(true);
 //       return;
 //     }
@@ -70,7 +68,16 @@
 
 //     const displayName = name === OWNER_NAME ? "المالك" : name;
 
-//     socket.emit("history", messages.filter((m) => m.type !== "voice"));
+//     // ← الجزء ده اتغير
+//     try {
+//       const data = fs.readFileSync(MESSAGES_FILE, "utf8");
+//       const parsed = JSON.parse(data);
+//       messages = Array.isArray(parsed) ? parsed : [];
+//     } catch(e) {
+//       messages = [];
+//     }
+
+//     socket.emit("history", messages.filter((m) => m.type !== "voice" && m.text));
 //     io.emit("system", { text: `${displayName} انضم إلى المحادثة`, time: getTime() });
 //     emitUsers();
 //   });
@@ -80,7 +87,7 @@
 //     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
 //     const text = typeof data?.text === "string" ? data.text.trim() : "";
 //     if (!text) return;
-//     const msgData = { id: socket.id, username: displayName, text, time: getTime(), type: "text" };
+//     const msgData = { senderId: socket.id, username: displayName, text, time: getTime(), type: "text" };
 //     messages.push(msgData);
 //     io.emit("message", msgData);
 //     saveMessages();
@@ -90,9 +97,9 @@
 //     const rawName = users[socket.id] || "مجهول";
 //     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
 //     if (!data?.audio) return;
-//     const voiceData = { id: socket.id, username: displayName, audio: data.audio, duration: data.duration || 0, time: getTime(), type: "voice" };
+//     const voiceData = { senderId: socket.id, username: displayName, audio: data.audio, duration: data.duration || 0, time: getTime(), type: "voice" };
 //     io.emit("voice", voiceData);
-//     messages.push({ id: socket.id, username: displayName, time: voiceData.time, duration: voiceData.duration, type: "voice", savedVoice: true });
+//     messages.push({ senderId: socket.id, username: displayName, time: voiceData.time, duration: voiceData.duration, type: "voice", savedVoice: true });
 //     saveMessages();
 //   });
 
@@ -101,7 +108,7 @@
 //     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
 //     if (!data?.dataUrl || !data?.mediaType) return;
 //     io.emit("media-upload", {
-//       id: socket.id,
+//       senderId: socket.id,
 //       username: displayName,
 //       dataUrl: data.dataUrl,
 //       mediaType: data.mediaType,
@@ -110,7 +117,16 @@
 //     });
 //   });
 
-//   // ===== البث المباشر =====
+// socket.on("clear-chat", () => {
+//   messages = [];
+//   try {
+//     fs.writeFileSync(MESSAGES_FILE, "[]");
+//   } catch (err) {
+//     console.error("Error clearing messages:", err);
+//   }
+//   io.emit("chat-cleared");
+// });
+
 //   socket.on("stream-offer", (data) => {
 //     if (!users[socket.id]) return;
 //     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
@@ -124,7 +140,6 @@
 //     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
 //   });
 
-//   // ===== المكالمة الصوتية =====
 //   socket.on("call-offer", (data) => {
 //     if (!users[socket.id]) return;
 //     const rawName = users[socket.id];
@@ -148,14 +163,12 @@
 //     socket.broadcast.emit("call-reject");
 //   });
 
-//   // ===== typing =====
 //   socket.on("typing", (isTyping) => {
 //     const rawName = users[socket.id] || "مجهول";
 //     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
 //     socket.broadcast.emit("typing", { username: displayName, isTyping });
 //   });
 
-//   // ===== خروج المالك القسري =====
 //   socket.on("owner-logout", () => {
 //     if (users[socket.id] !== OWNER_NAME) return;
 //     io.emit("force-logout", { reason: "المالك أنهى المحادثة." });
@@ -185,9 +198,11 @@
 
 // function saveMessages() {
 //   if (messages.length > 500) messages = messages.slice(-500);
-//   fs.writeFile(MESSAGES_FILE, JSON.stringify(messages), (err) => {
-//     if (err) console.error("Error saving messages:", err);
-//   });
+//   try {
+//     fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages));
+//   } catch (err) {
+//     console.error("Error saving messages:", err);
+//   }
 // }
 
 // function getTime() {
@@ -196,6 +211,13 @@
 
 // const PORT = process.env.PORT || 3000;
 // server.listen(PORT, () => { console.log(`🚀 Server running on port ${PORT}`); });
+
+
+
+
+
+
+
 
 
 const express = require("express");
@@ -267,15 +289,6 @@ io.on("connection", (socket) => {
 
     const displayName = name === OWNER_NAME ? "المالك" : name;
 
-    // ← الجزء ده اتغير
-    try {
-      const data = fs.readFileSync(MESSAGES_FILE, "utf8");
-      const parsed = JSON.parse(data);
-      messages = Array.isArray(parsed) ? parsed : [];
-    } catch(e) {
-      messages = [];
-    }
-
     socket.emit("history", messages.filter((m) => m.type !== "voice" && m.text));
     io.emit("system", { text: `${displayName} انضم إلى المحادثة`, time: getTime() });
     emitUsers();
@@ -298,8 +311,6 @@ io.on("connection", (socket) => {
     if (!data?.audio) return;
     const voiceData = { senderId: socket.id, username: displayName, audio: data.audio, duration: data.duration || 0, time: getTime(), type: "voice" };
     io.emit("voice", voiceData);
-    messages.push({ senderId: socket.id, username: displayName, time: voiceData.time, duration: voiceData.duration, type: "voice", savedVoice: true });
-    saveMessages();
   });
 
   socket.on("media-upload", (data) => {
@@ -317,10 +328,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("clear-chat", () => {
-  messages = [];
-  fs.writeFileSync(MESSAGES_FILE, "[]");  // ← writeFileSync مش writeFile
-  io.emit("chat-cleared");
-});
+    messages = [];
+    try {
+      fs.writeFileSync(MESSAGES_FILE, "[]");
+    } catch (err) {
+      console.error("Error clearing messages:", err);
+    }
+    io.emit("chat-cleared");
+  });
 
   socket.on("stream-offer", (data) => {
     if (!users[socket.id]) return;
@@ -366,6 +381,12 @@ io.on("connection", (socket) => {
 
   socket.on("owner-logout", () => {
     if (users[socket.id] !== OWNER_NAME) return;
+    messages = [];
+    try {
+      fs.writeFileSync(MESSAGES_FILE, "[]");
+    } catch (err) {
+      console.error("Error clearing messages on logout:", err);
+    }
     io.emit("force-logout", { reason: "المالك أنهى المحادثة." });
     setTimeout(() => {
       io.disconnectSockets(true);
@@ -393,9 +414,11 @@ function emitUsers() {
 
 function saveMessages() {
   if (messages.length > 500) messages = messages.slice(-500);
-  fs.writeFile(MESSAGES_FILE, JSON.stringify(messages), (err) => {
-    if (err) console.error("Error saving messages:", err);
-  });
+  try {
+    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(messages));
+  } catch (err) {
+    console.error("Error saving messages:", err);
+  }
 }
 
 function getTime() {
