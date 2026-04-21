@@ -246,7 +246,8 @@
     #viewer-overlay.fullscreen-mode #viewer-header { cursor: default; }
     #viewer-label { font-size: 13px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 6px; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; flex-shrink: 0; }
-    .viewer-controls { display: flex; align-items: center; gap: 6px; }
+    .viewer-controls { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; overflow: visible; }
+
     .viewer-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .viewer-ctrl-btn:hover { background: rgba(255,255,255,.16); }
     .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: var(--red); color: var(--red); }
@@ -362,7 +363,7 @@
       <div id="viewer-label"><div class="live-dot"></div>بث مباشر</div>
       <div class="viewer-controls">
         <button class="viewer-ctrl-btn" onclick="setViewerSize('small')">⊟</button>
-        <button class="viewer-ctrl-btn" id="switch-cam-btn" onclick="switchCamera()" title="عكس الكاميرا" style="display:none">🔄</button>
+        <button class="viewer-ctrl-btn" id="switch-cam-btn" onclick="switchCamera()" title="عكس الكاميرا" style="display:flex">🔄</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')">⊞</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('full')">⛶</button>
         <button class="viewer-ctrl-btn danger" onclick="closeViewer()">✕</button>
