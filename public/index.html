@@ -247,7 +247,6 @@
     #viewer-label { font-size: 13px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 6px; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; flex-shrink: 0; }
     .viewer-controls { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; overflow: visible; }
-
     .viewer-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .viewer-ctrl-btn:hover { background: rgba(255,255,255,.16); }
     .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: var(--red); color: var(--red); }
@@ -363,7 +362,7 @@
       <div id="viewer-label"><div class="live-dot"></div>بث مباشر</div>
       <div class="viewer-controls">
         <button class="viewer-ctrl-btn" onclick="setViewerSize('small')">⊟</button>
-        <button class="viewer-ctrl-btn" id="switch-cam-btn" onclick="switchCamera()" title="عكس الكاميرا" style="display:flex">🔄</button>
+        <button class="viewer-ctrl-btn" id="switch-cam-btn" onclick="switchCamera()" title="عكس الكاميرا" style="display:none">🔄</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')">⊞</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('full')">⛶</button>
         <button class="viewer-ctrl-btn danger" onclick="closeViewer()">✕</button>
@@ -606,7 +605,7 @@
         };
         mediaRecorder.start(80);
         startRecordingUI();
-      } catch (err) { alert('تأكد من إذن الميكروفون!'); }
+      } catch (err) { alert('تأكد من إذن الميكروفون والكاميرا!'); }
     }
     function startRecordingUI() {
       document.getElementById('voice-btn').classList.add('recording');
@@ -662,7 +661,12 @@
     async function startLocalStreamOnce() {
       if (localStreamStarted && localStreamObj && streamPC) return;
       try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
-      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
+      try {
+        localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
+      } catch(err) {
+        alert('تأكد من إذن الميكروفون والكاميرا!');
+        throw err;
+      }
       streamPC = new RTCPeerConnection(iceServers);
       streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
       localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
@@ -670,13 +674,13 @@
       const offer = await streamPC.createOffer();
       await streamPC.setLocalDescription(offer);
       socket.emit('stream-offer', { offer });
-document.getElementById('switch-cam-btn').style.display = 'flex';
       localStreamStarted = true;
+      document.getElementById('switch-cam-btn').style.display = 'flex';
     }
 
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
-      if (localStreamStarted) return; // ← أضف السطر ده فقط
+      if (localStreamStarted) return;
       const pc = new RTCPeerConnection(iceServers);
       pc.ontrack = (e) => {
         if (!e.streams || !e.streams[0]) return;
@@ -704,11 +708,14 @@ document.getElementById('switch-cam-btn').style.display = 'flex';
       document.getElementById('viewer-overlay').classList.add('active');
       setViewerSize('small');
     });
+
     socket.on('stream-answer', async ({ answer }) => { if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer)); });
+
     socket.on('stream-ice', async ({ candidate }) => {
-  const pc = localStreamStarted ? streamPC : window._viewerPC;
+      const pc = localStreamStarted ? streamPC : window._viewerPC;
       try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
     });
+
     socket.on('stream-end', () => {
       stopStreamRecordingAndDownload();
       document.getElementById('viewer-video').srcObject = null;
@@ -723,12 +730,16 @@ document.getElementById('switch-cam-btn').style.display = 'flex';
       try {
         localStreamObj.getVideoTracks().forEach(t => t.stop());
         const newStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: currentFacingMode },
-          audio: false
+          video: { facingMode: currentFacingMode }, audio: false
         });
         const newVideoTrack = newStream.getVideoTracks()[0];
         const sender = streamPC.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender) await sender.replaceTrack(newVideoTrack);
+        if (sender) {
+          await sender.replaceTrack(newVideoTrack);
+          const offer = await streamPC.createOffer();
+          await streamPC.setLocalDescription(offer);
+          socket.emit('stream-offer-update', { offer });
+        }
         localStreamObj.getVideoTracks().forEach(t => localStreamObj.removeTrack(t));
         localStreamObj.addTrack(newVideoTrack);
       } catch (err) {
@@ -737,6 +748,19 @@ document.getElementById('switch-cam-btn').style.display = 'flex';
         currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
       }
     }
+
+    socket.on('stream-offer-update', async ({ offer }) => {
+      if (!window._viewerPC) return;
+      await window._viewerPC.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await window._viewerPC.createAnswer();
+      await window._viewerPC.setLocalDescription(answer);
+      socket.emit('stream-answer-update', { answer });
+    });
+
+    socket.on('stream-answer-update', async ({ answer }) => {
+      if (!streamPC) return;
+      await streamPC.setRemoteDescription(new RTCSessionDescription(answer));
+    });
 
     function startStreamRecording(stream) {
       if (streamRecorder) return;
@@ -947,13 +971,9 @@ document.getElementById('switch-cam-btn').style.display = 'flex';
       if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) { wrap.classList.remove('open'); pickerOpen = false; }
     });
 
-    function openGame() {
-      document.getElementById('game-modal').style.display = 'flex';
-    }
+    function openGame() { document.getElementById('game-modal').style.display = 'flex'; }
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'go-back-to-chat') {
-        document.getElementById('game-modal').style.display = 'none';
-      }
+      if (e.data?.type === 'go-back-to-chat') { document.getElementById('game-modal').style.display = 'none'; }
     });
 
     window.addEventListener('beforeunload', () => {
