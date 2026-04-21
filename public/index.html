@@ -363,6 +363,7 @@
       <div class="viewer-controls">
         <button class="viewer-ctrl-btn" onclick="setViewerSize('small')">⊟</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')">⊞</button>
+        <button class="viewer-ctrl-btn" onclick="flipCamera()" title="تبديل الكاميرا">🔄</button>
         <button class="viewer-ctrl-btn" onclick="setViewerSize('full')">⛶</button>
         <button class="viewer-ctrl-btn danger" onclick="closeViewer()">✕</button>
       </div>
@@ -797,6 +798,7 @@
         inCall = true;
       } catch(err) { alert('تأكد من إذن الميكروفون!'); endCall(); }
     }
+
     function rejectCall() { stopRingtone(); socket.emit('call-reject'); hideCallUI(); }
     socket.on('call-answer', async ({ answer }) => { if (callPC) { await callPC.setRemoteDescription(new RTCSessionDescription(answer)); inCall = true; } });
     socket.on('call-ice', async ({ candidate }) => { try { if (callPC) await callPC.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){} });
@@ -920,6 +922,32 @@
       }
       wrap.classList.add('open'); pickerOpen = true;
     }
+    let currentFacingMode = 'user';
+
+async function flipCamera() {
+  if (!localStreamStarted || !localStreamObj || !streamPC) return;
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  
+  // وقف التراك القديم
+  localStreamObj.getVideoTracks().forEach(t => t.stop());
+  
+  // جيب تراك جديد
+  const newStream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode: currentFacingMode },
+    audio: false
+  });
+  
+  const newVideoTrack = newStream.getVideoTracks()[0];
+  
+  // استبدل التراك في الـ RTCPeerConnection
+  const sender = streamPC.getSenders().find(s => s.track && s.track.kind === 'video');
+  if (sender) await sender.replaceTrack(newVideoTrack);
+  
+  // استبدل التراك في الـ localStreamObj
+  localStreamObj.getVideoTracks().forEach(t => localStreamObj.removeTrack(t));
+  localStreamObj.addTrack(newVideoTrack);
+}
+
     document.addEventListener('click', (e) => {
       const wrap = document.getElementById('emoji-picker-wrap');
       const btn = document.getElementById('emoji-btn');
