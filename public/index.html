@@ -705,7 +705,7 @@
     });
     socket.on('stream-answer', async ({ answer }) => { if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer)); });
     socket.on('stream-ice', async ({ candidate }) => {
-      const pc = streamPC || window._viewerPC;
+  const pc = localStreamStarted ? streamPC : window._viewerPC;
       try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
     });
     socket.on('stream-end', () => {
