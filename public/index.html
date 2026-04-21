@@ -669,8 +669,8 @@
       const offer = await streamPC.createOffer();
       await streamPC.setLocalDescription(offer);
       socket.emit('stream-offer', { offer });
+document.getElementById('switch-cam-btn').style.display = 'flex';
       localStreamStarted = true;
-      document.getElementById('switch-cam-btn').style.display = 'flex';
     }
 
     socket.on('stream-offer', async ({ offer }) => {
