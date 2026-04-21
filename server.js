@@ -213,6 +213,9 @@
 // server.listen(PORT, () => { console.log(`🚀 Server running on port ${PORT}`); });
 
 
+
+
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -342,15 +345,6 @@ io.on("connection", (socket) => {
 
   socket.on("stream-ice", (data) => {
     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
-  });
-
-  // ← عكس الكاميرا
-  socket.on("stream-offer-update", (data) => {
-    socket.broadcast.emit("stream-offer-update", { offer: data.offer });
-  });
-
-  socket.on("stream-answer-update", (data) => {
-    socket.broadcast.emit("stream-answer-update", { answer: data.answer });
   });
 
   socket.on("call-offer", (data) => {
