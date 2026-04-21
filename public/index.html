@@ -675,6 +675,7 @@
 
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
+      if (localStreamStarted) return; // ← أضف السطر ده فقط
       const pc = new RTCPeerConnection(iceServers);
       pc.ontrack = (e) => {
         if (!e.streams || !e.streams[0]) return;
