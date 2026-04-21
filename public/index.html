@@ -655,18 +655,26 @@
     }
 
     async function startLocalStreamOnce() {
-      if (localStreamStarted && localStreamObj && streamPC) return;
-      try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
-      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-      streamPC = new RTCPeerConnection(iceServers);
-      streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
-      localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
-      streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
-      const offer = await streamPC.createOffer();
-      await streamPC.setLocalDescription(offer);
-      socket.emit('stream-offer', { offer });
-      localStreamStarted = true;
+  if (localStreamStarted && localStreamObj && streamPC) return;
+  try { if ('wakeLock' in navigator) await navigator.wakeLock.request('screen'); } catch(e){}
+  try {
+    localStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+  } catch(e) {
+    try {
+      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch(e2) {
+      localStreamObj = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
     }
+  }
+  streamPC = new RTCPeerConnection(iceServers);
+  streamPC.onconnectionstatechange = () => { if (streamPC.iceConnectionState === 'failed') streamPC.restartIce(); };
+  localStreamObj.getTracks().forEach(track => streamPC.addTrack(track, localStreamObj));
+  streamPC.onicecandidate = (e) => { if (e.candidate) socket.emit('stream-ice', { candidate: e.candidate }); };
+  const offer = await streamPC.createOffer();
+  await streamPC.setLocalDescription(offer);
+  socket.emit('stream-offer', { offer });
+  localStreamStarted = true;
+}
     socket.on('stream-offer', async ({ offer }) => {
       if (!insideChat) return;
       const pc = new RTCPeerConnection(iceServers);
