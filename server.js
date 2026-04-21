@@ -346,6 +346,9 @@ io.on("connection", (socket) => {
   socket.on("stream-ice", (data) => {
     socket.broadcast.emit("stream-ice", { candidate: data.candidate, from: socket.id });
   });
+  socket.on("flip-camera", () => {
+  socket.broadcast.emit("flip-camera");
+});
 
   socket.on("call-offer", (data) => {
     if (!users[socket.id]) return;
