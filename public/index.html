@@ -1434,8 +1434,9 @@
         } catch (e) { console.error(e); }
       });
 
-      socket.on("stream-offer", async ({ offer }) => {
-        if (!insideChat) return;
+      socket.on("stream-offer", async ({ offer, from }) => {
+    if (!insideChat) return;
+    if (from === myId) return;
         const pc = new RTCPeerConnection(iceServers);
         pc.ontrack = (e) => {
           if (!e.streams || !e.streams[0]) return;
