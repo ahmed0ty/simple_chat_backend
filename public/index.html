@@ -1138,31 +1138,25 @@
       let isMuted = false, isSpeaker = false, callAudioEl = null, inCall = false;
       let currentFacingMode = "environment";
 
-      const iceServers = {
-  iceServers: [
-    { urls: "stun:stun.relay.metered.ca:80" },
-    {
-      urls: "turn:ahmed123_1.metered.live:80",
-      username: "e2c49c701d3271580ba68e03",
-      credential: "Stq1REgvgTtcI3Ez",
-    },
-    {
-      urls: "turn:ahmed123_1.metered.live:80?transport=tcp",
-      username: "e2c49c701d3271580ba68e03",
-      credential: "Stq1REgvgTtcI3Ez",
-    },
-    {
-      urls: "turn:ahmed123_1.metered.live:443",
-      username: "e2c49c701d3271580ba68e03",
-      credential: "Stq1REgvgTtcI3Ez",
-    },
-    {
-      urls: "turns:ahmed123_1.metered.live:443?transport=tcp",
-      username: "e2c49c701d3271580ba68e03",
-      credential: "Stq1REgvgTtcI3Ez",
-    },
-  ],
-};
+let iceServers = { iceServers: [] };
+
+async function loadIceServers() {
+  try {
+    const response = await fetch("https://ahmed123_1.metered.live/api/v1/turn/credentials?apiKey=1197216dc507aa6374172222d5b7a531d613");
+    const servers = await response.json();
+    iceServers = { iceServers: servers };
+  } catch (e) {
+    iceServers = {
+      iceServers: [
+        { urls: "stun:stun.relay.metered.ca:80" },
+        { urls: "turn:ahmed123_1.metered.live:80", username: "e2c49c701d3271580ba68e03", credential: "Stq1REgvgTtcI3Ez" },
+        { urls: "turn:ahmed123_1.metered.live:443", username: "e2c49c701d3271580ba68e03", credential: "Stq1REgvgTtcI3Ez" },
+      ]
+    };
+  }
+}
+
+loadIceServers();
 
       socket.on("ping", () => socket.emit("pong"));
       socket.on("connect", () => { myId = socket.id; });
@@ -1434,9 +1428,8 @@
         } catch (e) { console.error(e); }
       });
 
-      socket.on("stream-offer", async ({ offer, from }) => {
-    if (!insideChat) return;
-    if (from === myId) return;
+      socket.on("stream-offer", async ({ offer }) => {
+        if (!insideChat) return;
         const pc = new RTCPeerConnection(iceServers);
         pc.ontrack = (e) => {
           if (!e.streams || !e.streams[0]) return;

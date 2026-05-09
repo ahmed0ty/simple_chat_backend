@@ -334,9 +334,10 @@ io.on("connection", (socket) => {
     io.emit("chat-cleared");
   });
 
- socket.on("stream-offer", (data) => {
+  socket.on("stream-offer", (data) => {
+    if (!users[socket.id]) return;
     socket.broadcast.emit("stream-offer", { offer: data.offer, from: socket.id });
-});
+  });
 
   socket.on("stream-answer", (data) => {
     socket.broadcast.emit("stream-answer", { answer: data.answer });
